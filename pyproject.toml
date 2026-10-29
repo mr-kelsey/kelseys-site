@@ -1,0 +1,24 @@
+[project]
+name = "mrs-kelsey"
+version = "0.1.0"
+description = "Formulation company site"
+requires-python = ">=3.10"
+dependencies = [
+    "fastlite",
+    "python-fasthtml",
+    "resend",
+    "pydantic-settings",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "httpx",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]

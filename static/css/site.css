@@ -1,0 +1,55 @@
+/* Placeholder styling only — functional, not a design pass. The real
+   visual identity for Kaleidoscopic Creations gets built once the
+   stakeholder is present to affirm choices (see app/layout.py). */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+    color: #1a1a1a;
+}
+
+header,
+footer {
+    padding: 1rem 1.5rem;
+}
+
+header nav,
+footer nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.wordmark {
+    font-weight: 600;
+    text-decoration: none;
+    margin-right: 1rem;
+}
+
+.boundary {
+    border-top: 1px solid #ddd;
+}
+
+main {
+    padding: 1.5rem;
+}
+
+.page {
+    max-width: 48rem;
+    margin: 0 auto;
+}
+
+.admin-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1.5rem;
+    background: #f0f0f0;
+}
+
+.error {
+    color: #b00020;
+}
