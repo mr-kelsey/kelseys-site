@@ -136,8 +136,12 @@ from the current one, not a tweak to the existing keyframes:
   stagger-of-identical-keyframes approach — more fiddly timing, worth
   prototyping in isolation (a standalone scratch HTML file, same
   approach as the original design-proposal mockups) before touching the
-  real site, and verifying with the Playwright screenshot tooling at a
-  few points through one cycle rather than eyeballing it live.
+  real site, and verifying with the `screenshot` skill
+  (`~/.claude/skills/screenshot` — screenshots a local file or a running
+  localhost URL via a persistent Playwright setup; use `inspect_page.py`'s
+  scroll-to-selector capture, not a full-page shot, since this is exactly
+  the `position: fixed` case it exists for) at a few points through one
+  cycle rather than eyeballing it live.
 - Do not let this regress the two already-fixed, confirmed-working
   things about this layer: no `filter` + `mix-blend-mode` combination on
   the same element (silently breaks the blend, confirmed in testing),
