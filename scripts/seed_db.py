@@ -2,10 +2,14 @@
 
 TODO: no real Ingredient/Packaging/Formula/Product/Post content exists
 yet — the old CLI's CSV data was scratch data, not real, and wasn't
-migrated (see .claude/PLAN.md). Fill in REAL_* below once there's
-actual content to seed. Not idempotent — re-running against an
-already-seeded DB duplicates every row; use /admin for edits after the
-initial seed."""
+migrated. Fill in REAL_* below once there's actual content to seed.
+Not idempotent — re-running against an already-seeded DB duplicates
+every row; use /admin for edits after the initial seed.
+
+See .claude/NEXT_STEPS.md §4: the stakeholder won't disclose formulas
+beyond the two already public, so REAL_* here should stay empty/synthetic
+for dev and testing -- her actual data goes in through /admin directly,
+not through this script."""
 
 from app.db import site_db
 from app.models import Formula, Ingredient, Packaging, Post, Product
