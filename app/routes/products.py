@@ -69,10 +69,16 @@ def get():
     products = site_db.products(order_by="id")
     return site_layout(
         "Products",
-        Fast.H1("Products"),
-        Fast.Ul(
-            *(_product_row(i, product) for i, product in enumerate(products, start=1)),
-            cls="row-list",
+        Fast.Div(
+            Fast.H1("Products"),
+            Fast.Ul(
+                *(
+                    _product_row(i, product)
+                    for i, product in enumerate(products, start=1)
+                ),
+                cls="row-list",
+            ),
+            cls="simple-page",
         ),
     )
 
@@ -85,10 +91,13 @@ def get(slug: str):
     product = found[0]
     return site_layout(
         product.name,
-        Fast.A("Products", href="/products", cls="back-link"),
-        Fast.H1(product.name),
-        Fast.P(product.description),
-        Fast.Img(src=product.photo) if product.photo else None,
+        Fast.Div(
+            Fast.A("Products", href="/products", cls="back-link"),
+            Fast.H1(product.name),
+            Fast.P(product.description),
+            Fast.Img(src=product.photo) if product.photo else None,
+            cls="simple-page",
+        ),
     )
 
 

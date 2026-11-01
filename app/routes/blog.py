@@ -55,10 +55,13 @@ def get():
     posts = site_db.posts(order_by="id")
     return site_layout(
         "Blog",
-        Fast.H1("Blog"),
-        Fast.Ul(
-            *(_post_row(i, post) for i, post in enumerate(posts, start=1)),
-            cls="row-list",
+        Fast.Div(
+            Fast.H1("Blog"),
+            Fast.Ul(
+                *(_post_row(i, post) for i, post in enumerate(posts, start=1)),
+                cls="row-list",
+            ),
+            cls="simple-page",
         ),
     )
 
@@ -148,7 +151,14 @@ def get(slug: str):
     post = found[0]
     return site_layout(
         post.title,
-        Fast.A("Blog", href="/blog", cls="back-link"),
-        Fast.H1(post.title),
-        *(Fast.P(paragraph) for paragraph in post.body.split("\n\n") if paragraph),
+        Fast.Div(
+            Fast.A("Blog", href="/blog", cls="back-link"),
+            Fast.H1(post.title),
+            *(
+                Fast.P(paragraph)
+                for paragraph in post.body.split("\n\n")
+                if paragraph
+            ),
+            cls="simple-page",
+        ),
     )

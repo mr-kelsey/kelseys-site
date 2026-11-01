@@ -30,9 +30,12 @@ def get(session):
     flash = session.pop("flash", None)
     return site_layout(
         "Contact",
-        Fast.H1("Contact"),
-        Fast.P(flash) if flash else None,
-        _contact_form(),
+        Fast.Div(
+            Fast.H1("Contact"),
+            Fast.P(flash) if flash else None,
+            _contact_form(),
+            cls="simple-page",
+        ),
     )
 
 

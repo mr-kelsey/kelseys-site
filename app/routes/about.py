@@ -9,6 +9,9 @@ router = Fast.APIRouter()
 def get():
     return site_layout(
         "About",
-        Fast.H1("About"),
-        Fast.P("Placeholder bio — real company story pending."),
+        Fast.Div(
+            Fast.H1("About"),
+            Fast.P("Placeholder bio — real company story pending."),
+            cls="simple-page",
+        ),
     )
