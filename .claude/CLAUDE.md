@@ -33,14 +33,19 @@ conventions.
   `/opt` path `/opt/mrs-kelsey`; GitHub repo
   `github.com/mr-kelsey/mrs-kelsey-personal-webpage` (same account as
   `mr.`'s `mr-kelsey/personal-webpage`, disambiguated by the
-  `mrs-kelsey-` prefix). `mr.`'s own `deploy.yml` deploy job is a stub
-  (`script: echo "deploying"`, not wired to a real `deploy.sh`) —
-  `mrs.` mirrors that same stub deliberately rather than inventing real
-  wiring the template doesn't have.
-- Deployment — not yet done, outside any coding agent's reach:
-  provisioning `deploy-mrs` + its forced-command SSH key, writing the
-  real server-side `/opt/mrs-kelsey/deploy.sh`, updating
-  `proxy-serve/Caddyfile` with the `mrs.kelseys.site` block, the DNS
-  record, creating the GitHub repo + pushing + adding its SSH secrets.
+  `mrs-kelsey-` prefix).
+- Deployment: **live**, fully wired. GitHub Actions (`deploy.yml`) runs
+  the test suite on every push to `main` and then SSHes into the
+  droplet as `deploy-mrs`; Caddy (`proxy-serve/Caddyfile`) has the
+  `mrs.kelseys.site` block reverse-proxying to `mrs-kelsey-app:8080`;
+  DNS resolves and `https://mrs.kelseys.site/` serves 200 (verified
+  2026-11-01). The deploy job's own `script:` is just
+  `echo "deploying"`, same stub `mr.` uses — that's fine, not a gap:
+  `deploy-mrs`'s SSH key is forced-command-restricted on the droplet to
+  always run the real `/opt/mrs-kelsey/deploy.sh` regardless of what
+  command the Action sends, per the parent repo's cross-site SSH
+  convention. Don't "fix" the stub text thinking it's broken.
+  **Caveat:** pushing to `main` is what ships a release — confirm with
+  whoever's driving before pushing a commit, same as any other deploy.
 
 `cli-version` (a symlink to an unrelated-looking path outside this repo) holds the old CLI tool whose formulation/costing logic (ingredient costs, recipe-to-weight-percentage conversion, batch production costing) was ported into `app/costing.py` with real normalized tables instead of the CLI's stringified-list CSV columns — it's gitignored and reference-only, not something `app/` should import from directly.
