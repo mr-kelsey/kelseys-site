@@ -167,43 +167,42 @@ a:focus-visible {
 
 /* mix-blend-mode: multiply erases each frame's white square background
    by blending it against the solid --paper backdrop painted on
-   .reveal-stage above. No filter and no mask are applied to this
-   element or any ancestor -- filter (or a mask) combined with
-   mix-blend-mode is a confirmed-broken combination in real browsers
-   (the blend silently fails), so keep this element filter-free and
-   mask-free. */
+   .reveal-stage above. No filter is applied to this element or any
+   ancestor -- filter combined with mix-blend-mode is a confirmed-broken
+   combination in real browsers (the blend silently fails), so keep this
+   element filter-free. (mask, unlike filter, does not break the blend.)
+
+   The reveal itself is driven entirely by static/js/spotlight.js, which
+   sets mask-image directly every frame from a single shared clock
+   instead of a CSS @keyframes animation -- a per-frame radial-gradient
+   mask with two independently-moving stops (an inner "erase" edge and
+   an outer "reveal" edge) can't be expressed as a CSS animation without
+   @property (inconsistent browser support) or mask-composite (different
+   compositing keyword syntax in Safari), so JS owns it instead. See
+   that file for the reveal/conceal math.
+
+   `circle closest-side` (not the bare `circle` default) matters:
+   radial-gradient()'s default sizing is farthest-corner, which for a
+   square box is ~141% of the half-width, landing a 100% stop past this
+   box's own edge. closest-side pins 100% to exactly the box's
+   half-width -- required for spotlight.js's inner/outer percentages to
+   mean what they say. The transparent/opaque stops below are the
+   "fully closed" state (nothing revealed) that JS takes over from. */
 .frame-layer {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    opacity: 0;
     mix-blend-mode: multiply;
-    animation-name: frameFade;
-    animation-duration: 20s;
-    animation-iteration-count: infinite;
-    animation-timing-function: ease-in-out;
-}
 
-@keyframes frameFade {
-    0%   { opacity: 0; }
-    6%   { opacity: 1; }
-    16%  { opacity: 1; }
-    24%  { opacity: 0; }
-    100% { opacity: 0; }
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: radial-gradient(circle closest-side, transparent 0%, black 0%, black 0%, transparent 0%);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-image: radial-gradient(circle closest-side, transparent 0%, black 0%, black 0%, transparent 0%);
 }
-
-.frame-layer:nth-of-type(1)  { animation-delay: 0s;  }
-.frame-layer:nth-of-type(2)  { animation-delay: 2s;  }
-.frame-layer:nth-of-type(3)  { animation-delay: 4s;  }
-.frame-layer:nth-of-type(4)  { animation-delay: 6s;  }
-.frame-layer:nth-of-type(5)  { animation-delay: 8s;  }
-.frame-layer:nth-of-type(6)  { animation-delay: 10s; }
-.frame-layer:nth-of-type(7)  { animation-delay: 12s; }
-.frame-layer:nth-of-type(8)  { animation-delay: 14s; }
-.frame-layer:nth-of-type(9)  { animation-delay: 16s; }
-.frame-layer:nth-of-type(10) { animation-delay: 18s; }
 
 /* =========================================================
    WINDOW SECTIONS — no background, let the fixed layer show through
@@ -653,13 +652,11 @@ footer .contact-line {
     .reveal-mark .ring {
         animation: none !important;
     }
-    .frame-layer {
-        animation: none !important;
-        opacity: 0 !important;
-    }
-    .frame-layer:nth-of-type(6) {
-        opacity: 1 !important;
-    }
+    /* .frame-layer itself needs no override here -- spotlight.js checks
+       prefers-reduced-motion directly, skips starting the per-frame
+       animation loop, and sets one frame's mask-image to fully open
+       instead (see static/js/spotlight.js). The rest stay at this
+       file's closed default. */
     a {
         transition: none !important;
     }

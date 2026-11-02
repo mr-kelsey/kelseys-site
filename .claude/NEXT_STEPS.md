@@ -108,48 +108,7 @@ Consequences:
   since we won't be reviewing her real entries after that point the way
   we'd review a PR.
 
-## 5. Spotlight animation: smooth the crossfade into a radial propagation
-
-Current behavior (`.frame-layer` / `@keyframes frameFade` in
-`static/css/site.css`): all ten frames crossfade via a uniform opacity
-change, so it reads as the mark's colors flashing/swapping rather than
-flowing.
-
-Requested behavior: the color change should visibly start at the
-**center** of the mark and propagate **outward** to the edge, fast
-enough that the center has already started the *next* transition by the
-time the previous one reaches the edge — a continuous outward ripple
-rather than a flat fade. Stakeholder flagged this as something they're
-not sure is achievable — it is, but it's a genuinely different technique
-from the current one, not a tweak to the existing keyframes:
-
-- The uniform `opacity: 0 → 1 → 0` crossfade can't produce this by
-  itself — it needs each frame's *reveal* to be driven by an animated
-  mask (e.g. `mask-image: radial-gradient(...)` whose radius keyframes
-  from 0% to 100% over the frame's active window) instead of a plain
-  opacity fade, so the new frame visibly "grows" from the center across
-  the old one.
-- Getting the next frame's center to start changing before the previous
-  ring finishes reaching the edge means overlapping two animated masks
-  (outgoing frame's reveal-mask growing while still finishing, incoming
-  frame's reveal-mask starting) rather than the current simple 2-second-
-  stagger-of-identical-keyframes approach — more fiddly timing, worth
-  prototyping in isolation (a standalone scratch HTML file, same
-  approach as the original design-proposal mockups) before touching the
-  real site, and verifying with the `screenshot` skill
-  (`~/.claude/skills/screenshot` — screenshots a local file or a running
-  localhost URL via a persistent Playwright setup; use `inspect_page.py`'s
-  scroll-to-selector capture, not a full-page shot, since this is exactly
-  the `position: fixed` case it exists for) at a few points through one
-  cycle rather than eyeballing it live.
-- Do not let this regress the two already-fixed, confirmed-working
-  things about this layer: no `filter` + `mix-blend-mode` combination on
-  the same element (silently breaks the blend, confirmed in testing),
-  and the `mix-blend-mode: multiply` erasure needs the solid `--paper`
-  backdrop on `.reveal-stage` to keep working once it's inside
-  `position: fixed`.
-
-## 6. Smaller carried-forward items
+## 5. Smaller carried-forward items
 
 - **Favicon**: `app/layout.py` currently points the favicon link at
   `logo-pastel.png` directly (the full-size mark, not a proper cropped/

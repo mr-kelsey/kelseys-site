@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fasthtml import common as Fast
 
 from app.layout import site_layout
@@ -5,6 +7,7 @@ from app.layout import site_layout
 router = Fast.APIRouter()
 
 CYCLE_FRAME_COUNT = 10
+SPOTLIGHT_SCRIPT_PATH = Path("static/js/spotlight.js")
 
 LIP_BALM_BASE: tuple[str, ...] = (
     "White Beeswax",
@@ -49,6 +52,15 @@ def _reveal_stage() -> Fast.Div:
         cls="reveal-stage",
         aria_hidden="true",
     )
+
+
+def _spotlight_script() -> Fast.Script:
+    """Drives the reveal-stage mark animation (see site.css's .frame-layer
+    comment for why this is JS rather than a CSS animation). Only the
+    home page renders .frame-layer elements, so this is scoped here
+    rather than loaded site-wide via layout.py."""
+    version = int(SPOTLIGHT_SCRIPT_PATH.stat().st_mtime)
+    return Fast.Script(src=f"/static/js/spotlight.js?v={version}", defer=True)
 
 
 def _window() -> Fast.Div:
@@ -329,6 +341,7 @@ def _about() -> Fast.Section:
 def get():
     return site_layout(
         "Home",
+        _spotlight_script(),
         _reveal_stage(),
         _hero(),
         _window(),
