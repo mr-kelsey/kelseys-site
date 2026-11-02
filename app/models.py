@@ -49,6 +49,7 @@ class Product:
     description: str = ""
     photo: str = ""
     formula_id: int = None
+    category: str = ""
     created_at: str = ""
 
 

@@ -395,6 +395,7 @@ a:focus-visible {
 }
 
 .tile {
+    display: block;
     border: 1px solid var(--hairline);
     padding: clamp(1.25rem, 3vw, 1.75rem);
 }
@@ -403,6 +404,9 @@ a:focus-visible {
     font-size: 1.25rem;
     margin-bottom: 0.3rem;
 }
+
+.tile--link:hover h3,
+.tile--link:focus-visible h3 { color: var(--berry); }
 
 .tile-character {
     font-family: "Space Mono", monospace;
@@ -445,6 +449,104 @@ table.ingredient-table {
 .tile-blurb {
     font-size: 0.9375rem;
     line-height: 1.65;
+}
+
+/* ---------- Products page (list + overlay) ---------- */
+
+.products-page { max-width: 54rem; }
+
+.products-category-group + .products-category-group {
+    margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.row-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--hairline);
+}
+
+.row-link {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.row-link:hover .row-title { color: var(--berry); }
+
+.row-index {
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+    opacity: 0.6;
+}
+
+.row-title {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1.0625rem;
+}
+
+.products-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.25rem, 5vw, 3rem);
+}
+
+.overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(var(--ink-rgb), 0.55);
+}
+
+.overlay-panel {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    max-width: 32rem;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.overlay-panel img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 1.25rem;
+}
+
+.overlay-panel h2 {
+    font-size: 1.5rem;
+    padding-right: 2.5rem;
+}
+
+.overlay-blurb { margin-top: 0.75rem; }
+
+.overlay-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+}
+
+.overlay-ingredients { margin-top: 1.5rem; }
+
+.overlay-ingredients h3 {
+    font-size: 0.9375rem;
+    margin-bottom: 0.5rem;
+}
+
+.overlay-ingredients ul {
+    margin: 0;
+    padding-left: 1.1rem;
 }
 
 /* ---------- Services / Private Label ---------- */
@@ -667,11 +769,17 @@ footer .contact-line {
 @media (max-width: 860px) {
     .about-grid { grid-template-columns: 1fr; }
     .tile-row--blurb { grid-template-columns: 1fr 1fr; }
+    /* Workbench sample renders up to 6 tiles server-side (see
+       WORKBENCH_SAMPLE_SIZE in app/routes/home.py); each breakpoint below
+       caps how many of those are actually shown, narrowest screens fewest,
+       rather than trying to infer viewport size server-side. */
+    .tile-row--blurb > :nth-child(n+5) { display: none; }
 }
 
 @media (max-width: 700px) {
     .tile-row { grid-template-columns: 1fr; }
     .tile-row--blurb { grid-template-columns: 1fr; }
+    .tile-row--blurb > :nth-child(n+4) { display: none; }
     .services h2 { max-width: none; }
 }
 
@@ -682,4 +790,5 @@ footer .contact-line {
     .window { height: clamp(9rem, 46vh, 54vh); }
     .section-mark { width: 60vw !important; height: 60vw !important; opacity: 0.2 !important; }
     .partner-row { flex-direction: column; }
+    .tile-row--blurb > :nth-child(n+3) { display: none; }
 }

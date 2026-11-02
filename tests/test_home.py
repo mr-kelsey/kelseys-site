@@ -1,5 +1,8 @@
 from starlette.testclient import TestClient
 
+from app.db import Database
+from app.models import Product
+
 
 def test_returns_200_for_home_page(client: TestClient) -> None:
     response = client.get("/")
@@ -13,7 +16,7 @@ def test_home_page_includes_nav_link_to_products(client: TestClient) -> None:
 
 def test_home_page_includes_nav_link_to_about(client: TestClient) -> None:
     response = client.get("/")
-    assert 'href="/about"' in response.text
+    assert 'href="/#about"' in response.text
 
 
 def test_home_page_includes_nav_link_to_contact(client: TestClient) -> None:
@@ -49,3 +52,35 @@ def test_home_page_names_a_real_partner_company(client: TestClient) -> None:
 def test_home_page_marks_credentials_as_placeholder(client: TestClient) -> None:
     response = client.get("/")
     assert "to be added" in response.text
+
+
+def test_home_page_shows_a_product_pulled_from_the_db(
+    client: TestClient, db: Database
+) -> None:
+    db.products.insert(Product(slug="sample", name="Sample Workbench Item", description="d"))
+    response = client.get("/")
+    assert "Sample Workbench Item" in response.text
+
+
+def test_home_page_workbench_tile_links_straight_to_the_product_page(
+    client: TestClient, db: Database
+) -> None:
+    db.products.insert(Product(slug="sample", name="Sample Workbench Item", description="d"))
+    response = client.get("/")
+    assert 'href="/products/sample"' in response.text
+
+
+def test_home_page_caps_the_workbench_sample_at_six_products(
+    client: TestClient, db: Database
+) -> None:
+    for i in range(10):
+        db.products.insert(Product(slug=f"sample-{i}", name=f"Sample {i}", description="d"))
+    response = client.get("/")
+    assert response.text.count('class="tile tile--link"') == 6
+
+
+def test_home_page_omits_workbench_heading_when_no_products_exist(
+    client: TestClient,
+) -> None:
+    response = client.get("/")
+    assert "Also from the workbench" not in response.text

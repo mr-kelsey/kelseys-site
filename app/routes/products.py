@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+from itertools import count, groupby
 from logging import getLogger
 
+from fastlite import NotFoundError
 from fasthtml import common as Fast
 
 from app.auth import admin_layout, require_admin
@@ -11,6 +13,36 @@ from app.models import Product
 router = Fast.APIRouter()
 logger = getLogger(__name__)
 
+UNCATEGORIZED_LABEL = "Uncategorized"
+
+
+def _formula_ingredient_names(formula_id: int) -> list[str]:
+    """Public-safe view of a formula's recipe: ingredient names only, in
+    insertion order. The exact proportions are the real trade secret
+    (FormulaIngredient.percent) — same as a cosmetic product's printed
+    ingredient list naming what's in it without disclosing the recipe's
+    ratios — so this helper must never read or return `.percent`."""
+    links = site_db.formula_ingredients(where="formula_id=?", where_args=[formula_id])
+    names = []
+    for link in links:
+        try:
+            names.append(site_db.ingredients.get(link.ingredient_id).name)
+        except NotFoundError:
+            continue
+    return names
+
+
+def _grouped_by_category(products: list[Product]) -> list[tuple[str, list[Product]]]:
+    ordered = sorted(
+        products, key=lambda product: (product.category or UNCATEGORIZED_LABEL, product.name)
+    )
+    return [
+        (category, list(items))
+        for category, items in groupby(
+            ordered, key=lambda product: product.category or UNCATEGORIZED_LABEL
+        )
+    ]
+
 
 def _product_row(index: int, product: Product) -> Fast.Li:
     return Fast.Li(
@@ -20,6 +52,52 @@ def _product_row(index: int, product: Product) -> Fast.Li:
             href=f"/products/{product.slug}",
             cls="row-link",
         )
+    )
+
+
+def _product_list(products: list[Product]) -> Fast.Div:
+    row_number = count(1)
+    return Fast.Div(
+        *(
+            Fast.Section(
+                Fast.H2(category, cls="group-heading"),
+                Fast.Ul(
+                    *(_product_row(next(row_number), product) for product in items),
+                    cls="row-list",
+                ),
+                cls="products-category-group",
+            )
+            for category, items in _grouped_by_category(products)
+        ),
+        cls="products-list",
+    )
+
+
+def _product_overlay(product: Product) -> Fast.Div:
+    ingredient_names = (
+        _formula_ingredient_names(product.formula_id) if product.formula_id else []
+    )
+    return Fast.Div(
+        Fast.A(href="/products", cls="overlay-backdrop", aria_label="Close"),
+        Fast.Div(
+            Fast.A("Close", href="/products", cls="overlay-close", aria_label="Close"),
+            Fast.H2(product.name, id="overlay-title"),
+            Fast.Img(src=product.photo, alt="") if product.photo else None,
+            Fast.P(product.description, cls="overlay-blurb"),
+            Fast.Div(
+                Fast.H3("Ingredients"),
+                Fast.Ul(*(Fast.Li(name) for name in ingredient_names)),
+                cls="overlay-ingredients",
+            )
+            if ingredient_names
+            else None,
+            cls="overlay-panel",
+            role="dialog",
+            aria_modal="true",
+            aria_labelledby="overlay-title",
+        ),
+        cls="products-overlay",
+        id="product-overlay",
     )
 
 
@@ -54,8 +132,9 @@ def _product_form(
             Fast.Textarea(product.description, name="description", required=True),
         ),
         Fast.Label("Photo path", Fast.Input(name="photo", value=product.photo)),
+        Fast.Label("Category", Fast.Input(name="category", value=product.category)),
         Fast.Label(
-            "Internal formula link (never shown publicly)",
+            "Formula link (ingredient names shown publicly, proportions never are)",
             Fast.Select(*formula_options, name="formula_id"),
         ),
         Fast.Button("Save", type="submit"),
@@ -71,33 +150,27 @@ def get():
         "Products",
         Fast.Div(
             Fast.H1("Products"),
-            Fast.Ul(
-                *(
-                    _product_row(i, product)
-                    for i, product in enumerate(products, start=1)
-                ),
-                cls="row-list",
-            ),
-            cls="simple-page",
+            _product_list(products),
+            cls="simple-page products-page",
         ),
     )
 
 
 @router("/products/{slug}")
 def get(slug: str):
-    found = site_db.products(where="slug=?", where_args=[slug])
+    products = site_db.products(order_by="id")
+    found = [product for product in products if product.slug == slug]
     if not found:
         raise Fast.HTTPException(status_code=404)
     product = found[0]
     return site_layout(
         product.name,
         Fast.Div(
-            Fast.A("Products", href="/products", cls="back-link"),
-            Fast.H1(product.name),
-            Fast.P(product.description),
-            Fast.Img(src=product.photo) if product.photo else None,
-            cls="simple-page",
+            Fast.H1("Products"),
+            _product_list(products),
+            cls="simple-page products-page",
         ),
+        _product_overlay(product),
     )
 
 
@@ -132,6 +205,7 @@ def post(
     name: str,
     description: str,
     photo: str = "",
+    category: str = "",
     formula_id: str = "",
 ):
     if (redirect := require_admin(session)) is not None:
@@ -142,6 +216,7 @@ def post(
             name=name,
             description=description,
             photo=photo,
+            category=category,
             formula_id=int(formula_id) if formula_id else None,
             created_at=datetime.now(timezone.utc).isoformat(),
         )
@@ -171,6 +246,7 @@ def post(
     name: str,
     description: str,
     photo: str = "",
+    category: str = "",
     formula_id: str = "",
 ):
     if (redirect := require_admin(session)) is not None:
@@ -184,6 +260,7 @@ def post(
             "name": name,
             "description": description,
             "photo": photo,
+            "category": category,
             "formula_id": int(formula_id) if formula_id else None,
         }
     )

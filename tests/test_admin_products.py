@@ -88,6 +88,22 @@ def test_post_admin_products_edit_updates_name(
     assert product.name == "Updated Name"
 
 
+def test_post_admin_products_new_sets_category(admin_client: TestClient, db: Database) -> None:
+    admin_client.post("/admin/products/new", data={**VALID_PRODUCT_FORM, "category": "Balms"})
+    [product] = db.products(where="slug=?", where_args=["new-product"])
+    assert product.category == "Balms"
+
+
+def test_post_admin_products_edit_updates_category(
+    admin_client: TestClient, db: Database
+) -> None:
+    _insert_product(db)
+    updated_form = {**VALID_PRODUCT_FORM, "category": "Balms"}
+    admin_client.post("/admin/products/new-product/edit", data=updated_form)
+    [product] = db.products(where="slug=?", where_args=["new-product"])
+    assert product.category == "Balms"
+
+
 def test_post_admin_products_delete_removes_product(
     admin_client: TestClient, db: Database
 ) -> None:

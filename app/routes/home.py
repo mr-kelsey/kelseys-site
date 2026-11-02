@@ -1,13 +1,22 @@
 from pathlib import Path
+from random import sample
 
 from fasthtml import common as Fast
 
+from app.db import site_db
 from app.layout import site_layout
+from app.models import Product
 
 router = Fast.APIRouter()
 
 CYCLE_FRAME_COUNT = 10
 SPOTLIGHT_SCRIPT_PATH = Path("static/js/spotlight.js")
+
+# Rendered server-side on every request; CSS then hides tiles past a
+# per-breakpoint count via nth-child, so narrower screens show fewer
+# without needing to infer viewport size server-side (see .tile-row--blurb
+# in site.css).
+WORKBENCH_SAMPLE_SIZE = 6
 
 LIP_BALM_BASE: tuple[str, ...] = (
     "White Beeswax",
@@ -102,6 +111,20 @@ def _ingredient_table(
     )
 
 
+def _workbench_tile(product: Product) -> Fast.A:
+    return Fast.A(
+        Fast.H3(product.name),
+        Fast.P(product.description, cls="tile-blurb"),
+        href=f"/products/{product.slug}",
+        cls="tile tile--link",
+    )
+
+
+def _workbench_sample() -> list[Product]:
+    products = site_db.products()
+    return sample(products, k=min(WORKBENCH_SAMPLE_SIZE, len(products)))
+
+
 def _hero() -> Fast.Section:
     return Fast.Section(
         _section_mark(
@@ -134,6 +157,7 @@ def _hero() -> Fast.Section:
 
 
 def _products() -> Fast.Section:
+    workbench_sample = _workbench_sample()
     return Fast.Section(
         _section_mark(
             color="berry",
@@ -174,39 +198,15 @@ def _products() -> Fast.Section:
                 ),
                 cls="tile-row",
             ),
-            Fast.H3("Also from the workbench", cls="group-heading"),
+            Fast.H3("Also from the workbench", cls="group-heading")
+            if workbench_sample
+            else None,
             Fast.Div(
-                Fast.Article(
-                    Fast.H3("Facial Regimen"),
-                    Fast.P(
-                        "A multi-step regimen for the face — a short ritual of "
-                        "products meant to be used together, not a single jar. "
-                        "The full write-up is still being put together for "
-                        "the site.",
-                        cls="tile-blurb",
-                    ),
-                    cls="tile",
-                ),
-                Fast.Article(
-                    Fast.H3("After-Tattoo Care"),
-                    Fast.P(
-                        "A dedicated aftercare product, made for the days "
-                        "right after a new tattoo.",
-                        cls="tile-blurb",
-                    ),
-                    cls="tile",
-                ),
-                Fast.Article(
-                    Fast.H3("Massage Oil"),
-                    Fast.P(
-                        "Sold to a spa partner, where it's now offered as a "
-                        "premium add-on during treatments.",
-                        cls="tile-blurb",
-                    ),
-                    cls="tile",
-                ),
+                *(_workbench_tile(product) for product in workbench_sample),
                 cls="tile-row tile-row--blurb",
-            ),
+            )
+            if workbench_sample
+            else None,
             cls="wrap",
         ),
         cls="products opaque has-mark",

@@ -6,7 +6,7 @@ STYLESHEET_PATH = Path("static/css/site.css")
 
 NAV_LINKS: tuple[tuple[str, str], ...] = (
     ("Home", "/"),
-    ("About", "/about"),
+    ("About", "/#about"),
     ("Products", "/products"),
     ("Blog", "/blog"),
     ("Contact", "/contact"),
@@ -97,7 +97,7 @@ class Layout:
     def __call__(self, page_title: str, *content) -> tuple:
         return (
             Fast.Title(f"{page_title} — {self.site_title}"),
-            Fast.Link(rel="icon", href="/static/img/logo-pastel.png", type="image/png"),
+            Fast.Link(rel="icon", href="/static/img/favicon.png", type="image/png"),
             *FONT_LINKS,
             Fast.Link(rel="stylesheet", href=self._stylesheet_href()),
             Fast.A("Skip to content", href="#main-content", cls="skip-link"),
