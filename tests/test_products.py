@@ -98,6 +98,43 @@ def test_product_linked_to_formula_shows_its_ingredient_names(
     assert "Beeswax" in response.text
 
 
+def test_product_linked_to_formula_renders_ingredients_as_a_label_style_table(
+    client: TestClient, db: Database
+) -> None:
+    formula = db.formulas.insert(Formula(name="Lip Balm Secret Recipe", grams_per_unit=10.0))
+    ingredient = db.ingredients.insert(Ingredient(name="Beeswax"))
+    db.formula_ingredients.insert(
+        FormulaIngredient(formula_id=formula.id, ingredient_id=ingredient.id, percent=37.5)
+    )
+    db.products.insert(
+        Product(slug="lip-balm", name="Lip Balm", description="d", formula_id=formula.id)
+    )
+    response = client.get("/products/lip-balm")
+    assert 'class="ingredient-table"' in response.text
+
+
+def test_overlay_shows_the_marketing_blurb_above_the_ingredient_table(
+    client: TestClient, db: Database
+) -> None:
+    formula = db.formulas.insert(Formula(name="Lip Balm Secret Recipe", grams_per_unit=10.0))
+    ingredient = db.ingredients.insert(Ingredient(name="Beeswax"))
+    db.formula_ingredients.insert(
+        FormulaIngredient(formula_id=formula.id, ingredient_id=ingredient.id, percent=37.5)
+    )
+    db.products.insert(
+        Product(
+            slug="lip-balm",
+            name="Lip Balm",
+            description="Smooth and simple.",
+            formula_id=formula.id,
+        )
+    )
+    response = client.get("/products/lip-balm")
+    assert response.text.index("Smooth and simple.") < response.text.index(
+        'class="ingredient-table"'
+    )
+
+
 def test_product_linked_to_formula_never_exposes_formula_ingredient_percentages(
     client: TestClient, db: Database
 ) -> None:
@@ -118,4 +155,4 @@ def test_product_with_no_linked_formula_shows_no_ingredients_block(
 ) -> None:
     db.products.insert(Product(slug="lip-balm", name="Lip Balm", description="d"))
     response = client.get("/products/lip-balm")
-    assert "Ingredients" not in response.text
+    assert 'class="ingredient-table"' not in response.text

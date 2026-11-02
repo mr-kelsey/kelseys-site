@@ -408,16 +408,6 @@ a:focus-visible {
 .tile--link:hover h3,
 .tile--link:focus-visible h3 { color: var(--berry); }
 
-.tile-character {
-    font-family: "Space Mono", monospace;
-    font-size: 0.8125rem;
-    letter-spacing: 0.02em;
-    margin: 0 0 1rem;
-}
-
-.tile-character.moss { color: var(--moss); }
-.tile-character.ochre { color: var(--ochre); }
-
 table.ingredient-table {
     width: 100%;
     border-collapse: collapse;
@@ -436,12 +426,6 @@ table.ingredient-table {
 .ingredient-table thead th {
     opacity: 0.65;
     border-bottom: 1px solid var(--ink);
-}
-
-.ingredient-table .group-row th {
-    padding-top: 0.9rem;
-    font-weight: 700;
-    opacity: 1;
 }
 
 .ingredient-table tbody tr:last-child th { border-bottom: none; }
@@ -780,6 +764,10 @@ footer .contact-line {
     .tile-row { grid-template-columns: 1fr; }
     .tile-row--blurb { grid-template-columns: 1fr; }
     .tile-row--blurb > :nth-child(n+4) { display: none; }
+    /* Featured sample renders up to 2 tiles server-side (see
+       FEATURED_SAMPLE_SIZE in app/routes/home.py) side by side above
+       700px; narrower than that, only the first still shows. */
+    .tile-row--featured > :nth-child(n+2) { display: none; }
     .services h2 { max-width: none; }
 }
 

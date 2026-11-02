@@ -73,6 +73,18 @@ def _product_list(products: list[Product]) -> Fast.Div:
     )
 
 
+def _ingredient_table(names: list[str]) -> Fast.Table:
+    """A specimen-style ingredient list matching the home page's lip-balm
+    tiles — names only, deliberately no weight percentages (those are
+    hers)."""
+    return Fast.Table(
+        Fast.Caption("Ingredients", cls="sr-only"),
+        Fast.Thead(Fast.Tr(Fast.Th("Ingredient", scope="col"))),
+        Fast.Tbody(*(Fast.Tr(Fast.Th(name, scope="row")) for name in names)),
+        cls="ingredient-table",
+    )
+
+
 def _product_overlay(product: Product) -> Fast.Div:
     ingredient_names = (
         _formula_ingredient_names(product.formula_id) if product.formula_id else []
@@ -84,11 +96,7 @@ def _product_overlay(product: Product) -> Fast.Div:
             Fast.H2(product.name, id="overlay-title"),
             Fast.Img(src=product.photo, alt="") if product.photo else None,
             Fast.P(product.description, cls="overlay-blurb"),
-            Fast.Div(
-                Fast.H3("Ingredients"),
-                Fast.Ul(*(Fast.Li(name) for name in ingredient_names)),
-                cls="overlay-ingredients",
-            )
+            Fast.Div(_ingredient_table(ingredient_names), cls="overlay-ingredients")
             if ingredient_names
             else None,
             cls="overlay-panel",

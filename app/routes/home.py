@@ -12,29 +12,13 @@ router = Fast.APIRouter()
 CYCLE_FRAME_COUNT = 10
 SPOTLIGHT_SCRIPT_PATH = Path("static/js/spotlight.js")
 
-# Rendered server-side on every request; CSS then hides tiles past a
-# per-breakpoint count via nth-child, so narrower screens show fewer
-# without needing to infer viewport size server-side (see .tile-row--blurb
-# in site.css).
+# Both rendered server-side on every request; CSS then hides tiles past
+# a per-breakpoint count via nth-child, so narrower screens show fewer
+# without needing to infer viewport size server-side (see .tile-row--featured
+# and .tile-row--blurb in site.css). Drawn from one combined random sample
+# (see _product_samples) so the same product never appears in both rows.
+FEATURED_SAMPLE_SIZE = 2
 WORKBENCH_SAMPLE_SIZE = 6
-
-LIP_BALM_BASE: tuple[str, ...] = (
-    "White Beeswax",
-    "Kokum Butter",
-    "Coconut Oil",
-    "Avocado Oil",
-    "Macadamia Oil",
-    "Emu Oil",
-    "Vit E Oil",
-    "CBD Raw",
-)
-LIP_BALM_SCENT: tuple[str, ...] = ("Frankincense EO", "Melaleuca EO", "Lavender EO")
-BRIGHT_LIP_BALM_SCENT: tuple[str, ...] = (
-    "Grapefruit EO",
-    "Wild Orange EO",
-    "Tangerine EO",
-    "Peppermint EO",
-)
 
 
 def _reveal_stage() -> Fast.Div:
@@ -93,25 +77,7 @@ def _section_mark(
     )
 
 
-def _ingredient_table(
-    caption: str, base: tuple[str, ...], scent: tuple[str, ...]
-) -> Fast.Table:
-    """A specimen-style ingredient list — names only, grouped by Base
-    and Scent, deliberately no weight percentages (those are hers)."""
-    return Fast.Table(
-        Fast.Caption(caption, cls="sr-only"),
-        Fast.Thead(Fast.Tr(Fast.Th("Ingredient", scope="col"))),
-        Fast.Tbody(
-            Fast.Tr(Fast.Th("Base", scope="colgroup"), cls="group-row"),
-            *(Fast.Tr(Fast.Th(name, scope="row")) for name in base),
-            Fast.Tr(Fast.Th("Scent", scope="colgroup"), cls="group-row"),
-            *(Fast.Tr(Fast.Th(name, scope="row")) for name in scent),
-        ),
-        cls="ingredient-table",
-    )
-
-
-def _workbench_tile(product: Product) -> Fast.A:
+def _product_tile(product: Product) -> Fast.A:
     return Fast.A(
         Fast.H3(product.name),
         Fast.P(product.description, cls="tile-blurb"),
@@ -120,9 +86,13 @@ def _workbench_tile(product: Product) -> Fast.A:
     )
 
 
-def _workbench_sample() -> list[Product]:
+def _product_samples() -> tuple[list[Product], list[Product]]:
+    """One random draw split into the home page's two rows — featured
+    (small) then workbench (larger) — so the same product is never
+    sampled into both."""
     products = site_db.products()
-    return sample(products, k=min(WORKBENCH_SAMPLE_SIZE, len(products)))
+    combined = sample(products, k=min(FEATURED_SAMPLE_SIZE + WORKBENCH_SAMPLE_SIZE, len(products)))
+    return combined[:FEATURED_SAMPLE_SIZE], combined[FEATURED_SAMPLE_SIZE:]
 
 
 def _hero() -> Fast.Section:
@@ -157,7 +127,7 @@ def _hero() -> Fast.Section:
 
 
 def _products() -> Fast.Section:
-    workbench_sample = _workbench_sample()
+    featured_sample, workbench_sample = _product_samples()
     return Fast.Section(
         _section_mark(
             color="berry",
@@ -170,40 +140,28 @@ def _products() -> Fast.Section:
         Fast.Div(
             Fast.H2("What's ready, and what's already working"),
             Fast.P(
-                "The two balms are built from one base and finished with "
-                "different scent blends. A few more things she makes aren't "
-                "balms at all — here's what they are, honestly, without a "
-                "formula sheet to show for it yet.",
+                "Pulled live from what's currently in the catalog — not a "
+                "fixed lineup, so what shows up here changes as new "
+                "products go in.",
                 cls="section-lede",
             ),
-            Fast.H3("The lip balms", cls="group-heading"),
             Fast.Div(
-                Fast.Article(
-                    Fast.H3("Lip Balm"),
-                    Fast.P("woodsy-floral", cls="tile-character moss"),
-                    _ingredient_table(
-                        "Lip Balm ingredients", LIP_BALM_BASE, LIP_BALM_SCENT
-                    ),
-                    cls="tile",
+                Fast.H3("Featured now", cls="group-heading"),
+                Fast.Div(
+                    *(_product_tile(product) for product in featured_sample),
+                    cls="tile-row tile-row--featured",
                 ),
-                Fast.Article(
-                    Fast.H3("Bright Lip Balm"),
-                    Fast.P("citrus-bright", cls="tile-character ochre"),
-                    _ingredient_table(
-                        "Bright Lip Balm ingredients",
-                        LIP_BALM_BASE,
-                        BRIGHT_LIP_BALM_SCENT,
-                    ),
-                    cls="tile",
-                ),
-                cls="tile-row",
-            ),
-            Fast.H3("Also from the workbench", cls="group-heading")
-            if workbench_sample
+                id="featured-products",
+            )
+            if featured_sample
             else None,
             Fast.Div(
-                *(_workbench_tile(product) for product in workbench_sample),
-                cls="tile-row tile-row--blurb",
+                Fast.H3("Also from the workbench", cls="group-heading"),
+                Fast.Div(
+                    *(_product_tile(product) for product in workbench_sample),
+                    cls="tile-row tile-row--blurb",
+                ),
+                id="workbench-products",
             )
             if workbench_sample
             else None,
