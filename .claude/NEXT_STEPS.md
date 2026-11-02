@@ -10,9 +10,11 @@ state of the app before working from this list.
 
 ## Done (2026-11-02)
 
-- **About folded into the home page.** `/about` now redirects to
-  `/#about`; `NAV_LINKS` points there directly. See `app/routes/about.py`,
-  `app/layout.py`.
+- **About folded into the home page.** `NAV_LINKS` points straight to
+  `/#about`. The old standalone `/about` route is deleted outright (not
+  redirected) — checked for anything still linking to it, internally
+  or externally, and found nothing, so it just 404s like any other
+  retired URL now. See `app/layout.py`, `tests/test_errors.py`.
 - **Data-safety invariant corrected.** The old rule ("public routes
   must never touch `Formula`/`FormulaIngredient`") overcorrected — it
   also blocked showing a product's plain ingredient list, which isn't

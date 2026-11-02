@@ -4,7 +4,6 @@ from fasthtml.xtend import robots_txt
 from app.config import SiteConfig
 from app.errors import not_found
 from app.routes import (
-    about,
     admin,
     admin_costing,
     admin_formulas,
@@ -24,7 +23,6 @@ app, route = fast_app(
 
 for routes_module in (
     home,
-    about,
     products,
     blog,
     contact,
