@@ -126,3 +126,26 @@ def test_inserted_contact_message_is_persisted(db: Database) -> None:
 def test_ingredient_get_raises_for_unknown_id(db: Database) -> None:
     with raises(NotFoundError):
         db.ingredients.get(999)
+
+
+def test_public_ingredient_names_returns_linked_ingredient_names(db: Database) -> None:
+    formula = db.formulas.insert(Formula(name="Lip Balm", grams_per_unit=10.7112))
+    ingredient = db.ingredients.insert(Ingredient(name="White Beeswax"))
+    db.formula_ingredients.insert(
+        FormulaIngredient(formula_id=formula.id, ingredient_id=ingredient.id, percent=21.17)
+    )
+    assert db.public_ingredient_names(formula.id) == ["White Beeswax"]
+
+
+def test_public_ingredient_names_never_includes_percent(db: Database) -> None:
+    formula = db.formulas.insert(Formula(name="Lip Balm", grams_per_unit=10.7112))
+    ingredient = db.ingredients.insert(Ingredient(name="White Beeswax"))
+    db.formula_ingredients.insert(
+        FormulaIngredient(formula_id=formula.id, ingredient_id=ingredient.id, percent=21.17)
+    )
+    assert "21.17" not in db.public_ingredient_names(formula.id)
+
+
+def test_public_ingredient_names_is_empty_for_a_formula_with_no_links(db: Database) -> None:
+    formula = db.formulas.insert(Formula(name="Empty Formula", grams_per_unit=10.0))
+    assert db.public_ingredient_names(formula.id) == []

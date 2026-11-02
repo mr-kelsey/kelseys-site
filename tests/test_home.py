@@ -75,6 +75,52 @@ def test_home_page_product_tile_links_straight_to_the_product_page(
     assert 'href="/products/sample"' in response.text
 
 
+def test_home_page_featured_tile_shows_ingredient_table_when_formula_linked(
+    client: TestClient, db: Database
+) -> None:
+    formula = db.formulas.insert(Formula(name="Recipe", grams_per_unit=10.0))
+    ingredient = db.ingredients.insert(Ingredient(name="Beeswax"))
+    db.formula_ingredients.insert(
+        FormulaIngredient(formula_id=formula.id, ingredient_id=ingredient.id, percent=50.0)
+    )
+    db.products.insert(
+        Product(slug="sample", name="Sample", description="d", formula_id=formula.id)
+    )
+    response = client.get("/")
+    assert 'class="ingredient-table"' in response.text
+
+
+def test_home_page_featured_tile_shows_the_ingredient_names(
+    client: TestClient, db: Database
+) -> None:
+    formula = db.formulas.insert(Formula(name="Recipe", grams_per_unit=10.0))
+    ingredient = db.ingredients.insert(Ingredient(name="Beeswax"))
+    db.formula_ingredients.insert(
+        FormulaIngredient(formula_id=formula.id, ingredient_id=ingredient.id, percent=50.0)
+    )
+    db.products.insert(
+        Product(slug="sample", name="Sample", description="d", formula_id=formula.id)
+    )
+    response = client.get("/")
+    assert "Beeswax" in response.text
+
+
+def test_home_page_featured_tile_falls_back_to_blurb_when_not_formula_linked(
+    client: TestClient, db: Database
+) -> None:
+    db.products.insert(Product(slug="sample", name="Sample", description="A short blurb."))
+    response = client.get("/")
+    assert "A short blurb." in response.text
+
+
+def test_home_page_featured_tile_omits_ingredient_table_when_not_formula_linked(
+    client: TestClient, db: Database
+) -> None:
+    db.products.insert(Product(slug="sample", name="Sample", description="A short blurb."))
+    response = client.get("/")
+    assert 'class="ingredient-table"' not in response.text
+
+
 def test_home_page_caps_the_featured_sample_at_two_products(
     client: TestClient, db: Database
 ) -> None:

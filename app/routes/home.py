@@ -3,6 +3,7 @@ from random import sample
 
 from fasthtml import common as Fast
 
+from app.components import ingredient_table
 from app.db import site_db
 from app.layout import site_layout
 from app.models import Product
@@ -86,6 +87,23 @@ def _product_tile(product: Product) -> Fast.A:
     )
 
 
+def _featured_tile(product: Product) -> Fast.A:
+    """Same product-label look as the products overlay: an ingredient
+    table when there's a linked formula to show one for, otherwise the
+    same blurb-only presentation as a workbench tile."""
+    ingredient_names = (
+        site_db.public_ingredient_names(product.formula_id) if product.formula_id else []
+    )
+    return Fast.A(
+        Fast.H3(product.name),
+        ingredient_table(ingredient_names)
+        if ingredient_names
+        else Fast.P(product.description, cls="tile-blurb"),
+        href=f"/products/{product.slug}",
+        cls="tile tile--link",
+    )
+
+
 def _product_samples() -> tuple[list[Product], list[Product]]:
     """One random draw split into the home page's two rows — featured
     (small) then workbench (larger) — so the same product is never
@@ -148,7 +166,7 @@ def _products() -> Fast.Section:
             Fast.Div(
                 Fast.H3("Featured now", cls="group-heading"),
                 Fast.Div(
-                    *(_product_tile(product) for product in featured_sample),
+                    *(_featured_tile(product) for product in featured_sample),
                     cls="tile-row tile-row--featured",
                 ),
                 id="featured-products",

@@ -1,4 +1,4 @@
-from fastlite import database
+from fastlite import NotFoundError, database
 
 from app.config import SiteConfig
 from app.models import (
@@ -36,6 +36,21 @@ class Database:
         self.contact_messages = self.connection.create(
             ContactMessage, name="contact_messages", pk="id", transform=True
         )
+
+    def public_ingredient_names(self, formula_id: int) -> list[str]:
+        """Public-safe view of a formula's recipe: ingredient names only,
+        in insertion order. The exact proportions are the real trade
+        secret (FormulaIngredient.percent) — same as a cosmetic product's
+        printed ingredient list naming what's in it without disclosing
+        the recipe's ratios — so this must never read or return `.percent`."""
+        links = self.formula_ingredients(where="formula_id=?", where_args=[formula_id])
+        names = []
+        for link in links:
+            try:
+                names.append(self.ingredients.get(link.ingredient_id).name)
+            except NotFoundError:
+                continue
+        return names
 
 
 site_db = Database(SiteConfig().db_path)

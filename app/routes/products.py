@@ -2,10 +2,10 @@ from datetime import datetime, timezone
 from itertools import count, groupby
 from logging import getLogger
 
-from fastlite import NotFoundError
 from fasthtml import common as Fast
 
 from app.auth import admin_layout, require_admin
+from app.components import ingredient_table
 from app.db import site_db
 from app.layout import site_layout
 from app.models import Product
@@ -14,22 +14,6 @@ router = Fast.APIRouter()
 logger = getLogger(__name__)
 
 UNCATEGORIZED_LABEL = "Uncategorized"
-
-
-def _formula_ingredient_names(formula_id: int) -> list[str]:
-    """Public-safe view of a formula's recipe: ingredient names only, in
-    insertion order. The exact proportions are the real trade secret
-    (FormulaIngredient.percent) — same as a cosmetic product's printed
-    ingredient list naming what's in it without disclosing the recipe's
-    ratios — so this helper must never read or return `.percent`."""
-    links = site_db.formula_ingredients(where="formula_id=?", where_args=[formula_id])
-    names = []
-    for link in links:
-        try:
-            names.append(site_db.ingredients.get(link.ingredient_id).name)
-        except NotFoundError:
-            continue
-    return names
 
 
 def _grouped_by_category(products: list[Product]) -> list[tuple[str, list[Product]]]:
@@ -73,21 +57,9 @@ def _product_list(products: list[Product]) -> Fast.Div:
     )
 
 
-def _ingredient_table(names: list[str]) -> Fast.Table:
-    """A specimen-style ingredient list matching the home page's lip-balm
-    tiles — names only, deliberately no weight percentages (those are
-    hers)."""
-    return Fast.Table(
-        Fast.Caption("Ingredients", cls="sr-only"),
-        Fast.Thead(Fast.Tr(Fast.Th("Ingredient", scope="col"))),
-        Fast.Tbody(*(Fast.Tr(Fast.Th(name, scope="row")) for name in names)),
-        cls="ingredient-table",
-    )
-
-
 def _product_overlay(product: Product) -> Fast.Div:
     ingredient_names = (
-        _formula_ingredient_names(product.formula_id) if product.formula_id else []
+        site_db.public_ingredient_names(product.formula_id) if product.formula_id else []
     )
     return Fast.Div(
         Fast.A(href="/products", cls="overlay-backdrop", aria_label="Close"),
@@ -96,7 +68,7 @@ def _product_overlay(product: Product) -> Fast.Div:
             Fast.H2(product.name, id="overlay-title"),
             Fast.Img(src=product.photo, alt="") if product.photo else None,
             Fast.P(product.description, cls="overlay-blurb"),
-            Fast.Div(_ingredient_table(ingredient_names), cls="overlay-ingredients")
+            Fast.Div(ingredient_table(ingredient_names), cls="overlay-ingredients")
             if ingredient_names
             else None,
             cls="overlay-panel",
