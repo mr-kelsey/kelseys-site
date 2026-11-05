@@ -1,0 +1,782 @@
+/* Kaleidoscopic Creations — "Apothecary Reveal" visual identity.
+   Chosen after a round of mockups reviewed with the stakeholder: moss/
+   berry/ochre on bone paper, Fraunces + Source Serif 4 + Space Mono,
+   plus a fixed full-viewport mark animation shown through transparent
+   "window" gaps on the home page (see app/routes/home.py). */
+
+:root {
+    --paper: #EDE6D3;
+    --ink: #2B2A22;
+    --ink-rgb: 43, 42, 34;
+    --moss: #42502F;
+    --berry: #7A3347;
+    --ochre: #B9842A;
+    --hairline: #C9BE9E;
+    --measure-body: 34rem;
+    --measure-wide: 42rem;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+html {
+    scroll-behavior: smooth;
+    /* the watermark fragments and the reveal windows deliberately touch
+       the viewport edges; this keeps either from introducing scrollbars */
+    overflow-x: hidden;
+}
+
+body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Source Serif 4", serif;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-optical-sizing: auto;
+    margin: 0;
+    color: var(--ink);
+}
+
+p { margin: 0 0 1rem; }
+p:last-child { margin-bottom: 0; }
+
+a { color: inherit; text-decoration: none; }
+
+a:focus-visible {
+    outline: 2px solid var(--berry);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    a { transition: color 0.15s ease, border-color 0.15s ease; }
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -3rem;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.5rem 0.9rem;
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+    z-index: 200;
+}
+.skip-link:focus-visible {
+    top: 1rem;
+    outline: 2px solid var(--ochre);
+    outline-offset: 2px;
+}
+
+.mono { font-family: "Space Mono", monospace; }
+
+.wrap {
+    max-width: 68rem;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 5vw, 3.5rem);
+}
+
+/* The shared page wrapper (app/layout.py) deliberately carries no width
+   constraint -- the home page's sections are full-bleed, each capping
+   its own content width via .wrap above. Pages that don't yet have
+   their own section-level layout (About, Products, Blog, Contact are
+   still placeholders) should wrap their content in .simple-page below
+   instead of relying on .page for a readable measure. */
+.page { }
+
+.simple-page {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: clamp(2.5rem, 6vw, 4rem) clamp(1.25rem, 5vw, 3.5rem);
+}
+
+/* =========================================================
+   FIXED REVEAL LAYER
+   A permanently fixed, full-viewport layer sitting behind the entire
+   page (first child of body, z-index 0). Every opaque section below
+   is given position:relative + z-index:1, which — combined with this
+   layer's earlier position in the DOM and lower z-index — guarantees
+   it paints on top and fully hides the layer. The short "window"
+   sections carry no background at all, so in those gaps this same,
+   never-moving, centered mark shows through untouched by scrolling.
+   ========================================================= */
+
+.reveal-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    /* A solid backdrop matching the page's own paper color, painted
+       inside this fixed layer's own stacking context. position:fixed +
+       z-index here creates a stacking context concept 2 never had (its
+       mark-stage just sat in normal flow), and mix-blend-mode only
+       blends against content painted within that same context -- without
+       an opaque backdrop here, multiply would have nothing to blend
+       against and the frame JPEGs' white squares would show through
+       unerased. Since this color matches --paper exactly, it's invisible
+       against every window section (which share the same page background),
+       so the effect still reads as "the fixed layer showing through." */
+    background: var(--paper);
+}
+
+.reveal-mark {
+    position: relative;
+    width: min(82vmin, 900px);
+    aspect-ratio: 1 / 1;
+}
+
+.reveal-mark .ring {
+    position: absolute;
+    inset: -6%;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(var(--ink-rgb), 0.22);
+    animation: spin 90s linear infinite;
+}
+
+.reveal-mark .ring--inner {
+    inset: 4%;
+    /* Concept 2 only overrides border-color here, inheriting the dashed
+       1.5px style from .ring above -- a solid ring reads as static even
+       while it's spinning, since there's no dash pattern to show motion
+       against. Only color changes here; style/width inherit from .ring. */
+    border-color: rgba(var(--ink-rgb), 0.16);
+    animation: spin 70s linear infinite reverse;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* mix-blend-mode: multiply erases each frame's white square background
+   by blending it against the solid --paper backdrop painted on
+   .reveal-stage above. No filter is applied to this element or any
+   ancestor -- filter combined with mix-blend-mode is a confirmed-broken
+   combination in real browsers (the blend silently fails), so keep this
+   element filter-free. (mask, unlike filter, does not break the blend.)
+
+   The reveal itself is driven entirely by static/js/spotlight.js, which
+   sets mask-image directly every frame from a single shared clock
+   instead of a CSS @keyframes animation -- a per-frame radial-gradient
+   mask with two independently-moving stops (an inner "erase" edge and
+   an outer "reveal" edge) can't be expressed as a CSS animation without
+   @property (inconsistent browser support) or mask-composite (different
+   compositing keyword syntax in Safari), so JS owns it instead. See
+   that file for the reveal/conceal math.
+
+   `circle closest-side` (not the bare `circle` default) matters:
+   radial-gradient()'s default sizing is farthest-corner, which for a
+   square box is ~141% of the half-width, landing a 100% stop past this
+   box's own edge. closest-side pins 100% to exactly the box's
+   half-width -- required for spotlight.js's inner/outer percentages to
+   mean what they say. The transparent/opaque stops below are the
+   "fully closed" state (nothing revealed) that JS takes over from. */
+.frame-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: multiply;
+
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: radial-gradient(circle closest-side, transparent 0%, black 0%, black 0%, transparent 0%);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-image: radial-gradient(circle closest-side, transparent 0%, black 0%, black 0%, transparent 0%);
+}
+
+/* =========================================================
+   WINDOW SECTIONS — no background, let the fixed layer show through
+   ========================================================= */
+
+.window {
+    height: clamp(12rem, 52vh, 60vh);
+}
+
+/* =========================================================
+   Watermark fragments — one per opaque section from the hero
+   onward. Each is the whole mark (transparent PNG, no crop needed),
+   recolored by a filter chain that boosts the source jewel-tone PNG's
+   own saturation, masked to a soft directional edge, and held at low
+   opacity so it reads as a press into the paper rather than a second
+   logo. Placement alternates which edge it bleeds from and which end
+   it anchors to, section to section.
+   ========================================================= */
+
+.section-mark {
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+}
+
+/* Class names (--moss/--berry/--ochre) are carried over from an earlier
+   muted palette exploration but no longer tint toward those colors --
+   they boost the source PNGs' own saturation instead, so each watermark
+   reads in its full original color. */
+.section-mark--moss  { filter: saturate(1.55) brightness(1.04) contrast(1.02); }
+.section-mark--berry { filter: saturate(1.7) brightness(1.08) contrast(1.0); }
+.section-mark--ochre { filter: saturate(1.6) brightness(1.0) contrast(1.06); }
+
+.section-mark--left  { left: clamp(-7rem, -10vw, -3rem); }
+.section-mark--right { right: clamp(-7rem, -10vw, -3rem); }
+
+.section-mark--top {
+    top: clamp(-2rem, -4vw, -0.5rem);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 88%);
+            mask-image: linear-gradient(to bottom, #000 0%, #000 42%, transparent 88%);
+}
+.section-mark--bottom {
+    bottom: clamp(-2rem, -4vw, -0.5rem);
+    -webkit-mask-image: linear-gradient(to top, #000 0%, #000 42%, transparent 88%);
+            mask-image: linear-gradient(to top, #000 0%, #000 42%, transparent 88%);
+}
+
+/* opaque sections needing a watermark get overflow hidden + relative
+   positioning to contain the bleed; their .wrap is lifted to z-index 1
+   locally so copy always sits above its own section's watermark */
+.has-mark {
+    position: relative;
+    overflow: hidden;
+}
+.has-mark > .wrap {
+    position: relative;
+    z-index: 1;
+}
+
+/* =========================================================
+   Opaque sections — each one fully covers the fixed reveal layer
+   ========================================================= */
+
+.opaque {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---------- Header ---------- */
+
+.site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hairline);
+}
+
+.site-nav .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(1rem, 4vw, 3rem);
+    flex-wrap: wrap;
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+}
+
+.wordmark {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    white-space: nowrap;
+}
+
+.site-nav nav {
+    display: flex;
+    gap: clamp(0.9rem, 2.5vw, 1.75rem);
+    flex-wrap: wrap;
+}
+
+.site-nav nav a {
+    font-family: "Space Mono", monospace;
+    font-size: 0.875rem;
+    color: var(--ink);
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+}
+
+.site-nav nav a:hover { border-bottom-color: var(--berry); }
+
+/* ---------- Hero ---------- */
+
+.hero {
+    background: var(--paper);
+    padding-top: clamp(3rem, 8vw, 5.5rem);
+    padding-bottom: clamp(3rem, 8vw, 5.5rem);
+}
+
+.hero-copy { max-width: 38rem; }
+
+.hero h1 {
+    font-size: clamp(2.1rem, 1.4rem + 3vw, 3.6rem);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+}
+
+.hero .lede {
+    margin-top: 1.5rem;
+    max-width: var(--measure-body);
+    font-size: 1.125rem;
+    line-height: 1.7;
+}
+
+.cta {
+    display: inline-block;
+    margin-top: 1.75rem;
+    font-family: "Source Serif 4", serif;
+    font-weight: 600;
+    font-size: 1.0625rem;
+    color: var(--berry);
+    border-bottom: 1px solid var(--berry);
+    padding-bottom: 2px;
+}
+
+.cta:hover { color: var(--ink); border-bottom-color: var(--ink); }
+
+/* ---------- Products ---------- */
+
+.products {
+    background: var(--paper);
+    border-top: 1px solid var(--hairline);
+    padding-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.products > .wrap > h2 {
+    font-size: clamp(1.5rem, 1.1rem + 1vw, 1.875rem);
+    margin-bottom: 0.5rem;
+}
+
+.products .section-lede {
+    max-width: 46ch;
+    opacity: 0.82;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.group-heading {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    padding-top: clamp(1.5rem, 3vw, 2rem);
+    border-top: 1px solid var(--hairline);
+}
+
+.group-heading:first-of-type { padding-top: 0; border-top: none; }
+
+.tile-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.tile-row--blurb {
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: clamp(1.5rem, 3vw, 2rem);
+}
+
+.tile {
+    display: block;
+    border: 1px solid var(--hairline);
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.tile h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.3rem;
+}
+
+.tile--link:hover h3,
+.tile--link:focus-visible h3 { color: var(--berry); }
+
+table.ingredient-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ingredient-table th {
+    text-align: left;
+    padding: 0.4rem 0.5rem 0.4rem 0;
+    border-bottom: 1px solid var(--hairline);
+    font-weight: 400;
+}
+
+.ingredient-table thead th {
+    opacity: 0.65;
+    border-bottom: 1px solid var(--ink);
+}
+
+.ingredient-table tbody tr:last-child th { border-bottom: none; }
+
+.tile-blurb {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+}
+
+/* ---------- Products page (list + overlay) ---------- */
+
+.products-page { max-width: 54rem; }
+
+.products-category-group + .products-category-group {
+    margin-top: clamp(2rem, 4vw, 3rem);
+}
+
+.row-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--hairline);
+}
+
+.row-link {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--hairline);
+}
+
+.row-link:hover .row-title { color: var(--berry); }
+
+.row-index {
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+    opacity: 0.6;
+}
+
+.row-title {
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1.0625rem;
+}
+
+.products-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.25rem, 5vw, 3rem);
+}
+
+.overlay-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(var(--ink-rgb), 0.55);
+}
+
+.overlay-panel {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    max-width: 32rem;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.overlay-panel img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 1.25rem;
+}
+
+.overlay-panel h2 {
+    font-size: 1.5rem;
+    padding-right: 2.5rem;
+}
+
+.overlay-blurb { margin-top: 0.75rem; }
+
+.overlay-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+}
+
+.overlay-ingredients { margin-top: 1.5rem; }
+
+.overlay-ingredients h3 {
+    font-size: 0.9375rem;
+    margin-bottom: 0.5rem;
+}
+
+.overlay-ingredients ul {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+/* ---------- Services / Private Label ---------- */
+
+.services {
+    background: var(--ink);
+    color: var(--paper);
+    padding-top: clamp(3rem, 7vw, 5rem);
+    padding-bottom: clamp(3rem, 7vw, 5rem);
+    border-top: 1px solid rgba(237, 230, 211, 0.18);
+    border-bottom: 1px solid rgba(237, 230, 211, 0.18);
+}
+
+.services .wrap { max-width: 56rem; }
+
+.services h2 {
+    color: var(--paper);
+    font-size: clamp(1.9rem, 1.3rem + 2.4vw, 3rem);
+    line-height: 1.1;
+    max-width: 24ch;
+}
+
+.services .lede-large {
+    margin-top: 1.5rem;
+    font-size: 1.1875rem;
+    line-height: 1.68;
+    max-width: 42rem;
+    color: rgba(237, 230, 211, 0.92);
+}
+
+.services .proof-point {
+    margin-top: 1.75rem;
+    padding: clamp(1rem, 3vw, 1.5rem);
+    border-left: 3px solid var(--ochre);
+    background: rgba(237, 230, 211, 0.06);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+}
+
+.services .proof-point strong { color: var(--ochre); font-weight: 700; }
+
+.services .cta-light {
+    display: inline-block;
+    margin-top: 2.25rem;
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--paper);
+    border-bottom: 2px solid var(--ochre);
+    padding-bottom: 3px;
+}
+
+.services .cta-light:hover { color: var(--ochre); }
+.services .cta-light:focus-visible { outline-color: var(--ochre); }
+
+/* ---------- Partners ---------- */
+
+.partners {
+    background: var(--paper);
+    border-top: 1px solid var(--hairline);
+    padding-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding-bottom: clamp(2.5rem, 5vw, 3.5rem);
+}
+
+.partners > .wrap > h2 {
+    font-size: clamp(1.5rem, 1.1rem + 1vw, 1.875rem);
+    margin-bottom: 0.4rem;
+}
+
+.partners .section-lede {
+    max-width: 46ch;
+    opacity: 0.82;
+    margin-bottom: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.partner-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(1rem, 3vw, 1.5rem);
+}
+
+.partner-slot {
+    flex: 1 1 14rem;
+    min-height: 6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid var(--hairline);
+    padding: 1.5rem;
+    font-family: "Fraunces", serif;
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.partner-slot--placeholder {
+    border-style: dashed;
+    font-family: "Space Mono", monospace;
+    font-weight: 400;
+    font-size: 0.875rem;
+    color: var(--ink);
+    opacity: 0.6;
+}
+
+/* ---------- About + Credentials ---------- */
+
+.about {
+    background: var(--paper);
+    border-top: 1px solid var(--hairline);
+    padding-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding-bottom: clamp(3rem, 6vw, 4.5rem);
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: start;
+}
+
+.about h2 {
+    font-size: clamp(1.5rem, 1.1rem + 1vw, 1.875rem);
+    margin-bottom: 1.25rem;
+}
+
+.about .measure { max-width: var(--measure-wide); font-size: 1.0625rem; }
+.about .measure p + p { margin-top: 1rem; }
+
+.credentials {
+    border: 1px solid var(--hairline);
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.credentials h3 {
+    font-size: 1.0625rem;
+    margin-bottom: 0.9rem;
+}
+
+.credentials ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.credentials li {
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+    color: var(--ink);
+    opacity: 0.55;
+    border: 1px dashed var(--hairline);
+    padding: 0.5rem 0.7rem;
+}
+
+/* ---------- Footer ---------- */
+
+footer.opaque {
+    background: var(--paper);
+    border-top: 1px solid var(--hairline);
+    padding-top: 1.75rem;
+    padding-bottom: 2.5rem;
+}
+
+footer nav {
+    display: flex;
+    gap: clamp(0.9rem, 2.5vw, 1.5rem);
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+}
+
+footer nav a {
+    font-family: "Space Mono", monospace;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+}
+
+footer nav a:hover { border-bottom-color: var(--berry); }
+
+footer .contact-line {
+    font-size: 0.9375rem;
+    opacity: 0.85;
+}
+
+/* ---------- Misc shared chrome ---------- */
+
+.admin-nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1.5rem;
+    background: #f0f0f0;
+}
+
+.error {
+    color: #b00020;
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+
+    .reveal-mark .ring {
+        animation: none !important;
+    }
+    /* .frame-layer itself needs no override here -- spotlight.js checks
+       prefers-reduced-motion directly, skips starting the per-frame
+       animation loop, and sets one frame's mask-image to fully open
+       instead (see static/js/spotlight.js). The rest stay at this
+       file's closed default. */
+    a {
+        transition: none !important;
+    }
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 860px) {
+    .about-grid { grid-template-columns: 1fr; }
+    .tile-row--blurb { grid-template-columns: 1fr 1fr; }
+    /* Workbench sample renders up to 6 tiles server-side (see
+       WORKBENCH_SAMPLE_SIZE in app/routes/home.py); each breakpoint below
+       caps how many of those are actually shown, narrowest screens fewest,
+       rather than trying to infer viewport size server-side. */
+    .tile-row--blurb > :nth-child(n+5) { display: none; }
+}
+
+@media (max-width: 700px) {
+    .tile-row { grid-template-columns: 1fr; }
+    .tile-row--blurb { grid-template-columns: 1fr; }
+    .tile-row--blurb > :nth-child(n+4) { display: none; }
+    /* Featured sample renders up to 2 tiles server-side (see
+       FEATURED_SAMPLE_SIZE in app/routes/home.py) side by side above
+       700px; narrower than that, only the first still shows. */
+    .tile-row--featured > :nth-child(n+2) { display: none; }
+    .services h2 { max-width: none; }
+}
+
+@media (max-width: 480px) {
+    .wordmark { font-size: 1rem; }
+    .hero .lede { max-width: none; }
+    .about .measure { max-width: none; }
+    .window { height: clamp(9rem, 46vh, 54vh); }
+    .section-mark { width: 60vw !important; height: 60vw !important; opacity: 0.2 !important; }
+    .partner-row { flex-direction: column; }
+    .tile-row--blurb > :nth-child(n+3) { display: none; }
+}
