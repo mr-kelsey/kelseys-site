@@ -1,0 +1,492 @@
+/* kelseys.site -- a card-catalog vernacular: the site IS an index you filter,
+   narrow, and draw cards from at random, so the visual language borrows from
+   paper index cards and ledger lines rather than shadowed app "cards". */
+
+:root {
+  --paper: #efe7d8;
+  --paper-raised: #f5efe3;
+  --ink: #2b2a28;
+  --ink-soft: #5b5750;
+  --rule: #c9bca0;
+  --stamp: #a4342b;
+  --stamp-ink: #fdf8ef;
+  --herb: #4b5e45;
+  --herb-ink: #fdf8ef;
+  --focus-ring: #2f6fb3;
+
+  --font-display: "Besley", "Iowan Old Style", Georgia, serif;
+  --font-body: "Public Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, monospace;
+
+  --content-width: 42rem;
+  --gutter: 1.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1d1b17;
+    --paper-raised: #26231d;
+    --ink: #ece4d3;
+    --ink-soft: #b8ae9a;
+    --rule: #4a4438;
+    --stamp: #e06a5f;
+    --stamp-ink: #1d1b17;
+    --herb: #8fae84;
+    --herb-ink: #1d1b17;
+    --focus-ring: #6fb0e8;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper: #1d1b17;
+  --paper-raised: #26231d;
+  --ink: #ece4d3;
+  --ink-soft: #b8ae9a;
+  --rule: #4a4438;
+  --stamp: #e06a5f;
+  --stamp-ink: #1d1b17;
+  --herb: #8fae84;
+  --herb-ink: #1d1b17;
+  --focus-ring: #6fb0e8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a,
+  button,
+  input,
+  select {
+    transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease;
+  }
+}
+
+a {
+  color: var(--stamp);
+  text-decoration-thickness: 1px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+}
+.skip-link:focus {
+  left: var(--gutter);
+  top: 0.5rem;
+  background: var(--paper-raised);
+  padding: 0.4rem 0.75rem;
+  z-index: 10;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0 0 0.5rem;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+}
+
+.wrap {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* --- nav --- */
+
+.site-nav {
+  border-bottom: 2px solid var(--stamp);
+  padding: 1rem 0;
+}
+.site-nav .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+.site-nav nav,
+footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.site-nav a,
+footer a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.site-nav a:hover,
+footer a:hover {
+  border-bottom-color: var(--stamp);
+}
+
+/* --- the card-margin rule: the page's one structural device --- */
+
+main {
+  border-left: 3px solid var(--stamp);
+  margin-left: max(var(--gutter), calc((100vw - var(--content-width)) / 2 - 1.5rem));
+  min-height: 60vh;
+}
+.page {
+  max-width: calc(var(--content-width) - 1.5rem);
+  padding: 2rem 1.5rem 3rem;
+}
+@media (max-width: 40rem) {
+  main {
+    margin-left: 0;
+    border-left: none;
+    border-top: 3px solid var(--stamp);
+  }
+  .page {
+    max-width: 100%;
+    padding: 1.5rem var(--gutter) 2.5rem;
+  }
+}
+
+footer {
+  border-top: 1px solid var(--rule);
+  padding: 1.5rem 0 2.5rem;
+  color: var(--ink-soft);
+}
+
+/* --- home hero --- */
+
+.home-hero p {
+  color: var(--ink-soft);
+  max-width: 34ch;
+}
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* --- buttons: one filled accent per screen, everything else outline --- */
+
+button,
+.button {
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 2px;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-block;
+}
+button:hover,
+.button:hover {
+  border-color: var(--stamp);
+  color: var(--stamp);
+}
+button[type="submit"],
+.button:not(.button--secondary) {
+  background: var(--stamp);
+  border-color: var(--stamp);
+  color: var(--stamp-ink);
+}
+button[type="submit"]:hover,
+.button:not(.button--secondary):hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+.button--secondary {
+  border-color: var(--rule);
+  color: var(--ink);
+  background: transparent;
+}
+
+/* --- forms --- */
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 28rem;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.error {
+  color: var(--stamp);
+  font-weight: 500;
+}
+
+/* --- recipe filter + results: a card-catalog index, dotted leaders not cards --- */
+
+.recipe-results {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+.recipe-results li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.recipe-results li a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+}
+.recipe-results li a:hover {
+  color: var(--stamp);
+}
+.recipe-results li::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px dotted var(--rule);
+  margin: 0 0.25rem;
+  transform: translateY(-0.3em);
+}
+.recipe-results li .servings {
+  font-family: var(--font-data);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+/* --- recipe detail + random draw --- */
+
+.recipe-detail .servings,
+.random-recipe .servings {
+  font-family: var(--font-data);
+  color: var(--ink-soft);
+}
+.recipe-detail ul,
+.random-recipe ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  border-top: 1px solid var(--rule);
+}
+.recipe-detail li,
+.random-recipe li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-family: var(--font-data);
+  font-size: 0.95rem;
+}
+.random-recipe li form {
+  margin: 0;
+}
+.random-recipe li button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+.recipe-detail pre,
+.random-recipe pre {
+  font-family: var(--font-body);
+  white-space: pre-wrap;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 1rem;
+}
+
+/* --- admin --- */
+
+.admin-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+.admin-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+.admin-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.admin-row .row-title {
+  flex: 1;
+  font-weight: 500;
+}
+.admin-row form {
+  margin: 0;
+}
+.admin-action {
+  margin-bottom: 1rem;
+}
+.recipe-ingredient-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.recipe-ingredient-row select {
+  flex: 1;
+}
+.recipe-ingredient-row input {
+  flex: 1;
+}
+
+/* --- calendar --- */
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.month-label {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.filter-row a {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+.filter-row a.active {
+  border-color: var(--stamp);
+  color: var(--stamp);
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.calendar-weekday {
+  background: var(--paper-raised);
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  text-align: center;
+  padding: 0.35rem 0;
+  color: var(--ink-soft);
+}
+.day-square {
+  background: var(--paper);
+  min-height: 4.5rem;
+  padding: 0.3rem;
+  cursor: pointer;
+  font-family: var(--font-data);
+  font-size: 0.8rem;
+}
+.day-square:hover {
+  background: var(--paper-raised);
+}
+.day-square.outside-month {
+  color: var(--ink-soft);
+  background: var(--paper-raised);
+}
+.day-square.today .day-number {
+  color: var(--stamp);
+  font-weight: 700;
+}
+.day-square.critical-day {
+  box-shadow: inset 0 0 0 2px var(--stamp);
+}
+.event-bar {
+  height: 0.35rem;
+  border-radius: 1px;
+  margin-top: 0.2rem;
+}
+.recurring-label {
+  font-size: 0.7rem;
+  color: var(--herb);
+  margin-top: 0.2rem;
+}
+.manage-recurring-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+#event-dialog {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 1.5rem;
+  max-width: 28rem;
+  width: calc(100% - 2rem);
+}
+.recurring-event-row {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.75rem 0;
+}
+
+/* --- simple pages (404 etc.) --- */
+
+.simple-page {
+  padding: 3rem 0;
+}

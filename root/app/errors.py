@@ -1,0 +1,15 @@
+from fasthtml import common as Fast
+
+from app.layout import site_layout
+
+
+def not_found(request, exc):
+    return site_layout(
+        "Not Found",
+        Fast.Div(
+            Fast.H1("404"),
+            Fast.P("That page doesn't exist. Try the nav, or head back home."),
+            Fast.A("Back home", href="/"),
+            cls="simple-page",
+        ),
+    )

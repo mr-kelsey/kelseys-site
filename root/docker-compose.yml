@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    container_name: kelseys-root-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - app-data:/app/data
+      - ./family.json:/app/family.json:ro
+    networks:
+      - shared-web
+    expose:
+      - "8080"
+
+networks:
+  shared-web:
+    external: true
+
+volumes:
+  app-data:
