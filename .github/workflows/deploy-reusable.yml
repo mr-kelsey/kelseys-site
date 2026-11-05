@@ -1,0 +1,44 @@
+name: Deploy site (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      site_dir:
+        description: "Top-level directory of the subdomain being deployed, e.g. 'mr'"
+        required: true
+        type: string
+      test_command:
+        description: "Run from inside site_dir to gate the deploy -- override for non-Python sites (e.g. proxy-serve's Caddyfile validation)."
+        required: false
+        type: string
+        default: "uv sync --frozen && .venv/bin/pytest -q"
+    secrets:
+      SSH_HOST:
+        required: true
+      SSH_USER:
+        required: true
+      SSH_PRIVATE_KEY:
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.site_dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: ${{ inputs.test_command }}
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deploy on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: echo "deploying"

@@ -1,0 +1,17 @@
+name: Deploy mrs
+
+on:
+  push:
+    branches: [main]
+    paths: ["mrs/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      site_dir: mrs
+    secrets:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.MRS_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.MRS_SSH_PRIVATE_KEY }}

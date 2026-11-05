@@ -1,0 +1,17 @@
+name: Deploy root
+
+on:
+  push:
+    branches: [main]
+    paths: ["root/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      site_dir: root
+    secrets:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.ROOT_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.ROOT_SSH_PRIVATE_KEY }}

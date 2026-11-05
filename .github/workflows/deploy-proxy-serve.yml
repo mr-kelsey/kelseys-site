@@ -1,0 +1,20 @@
+name: Deploy proxy-serve
+
+on:
+  push:
+    branches: [main]
+    paths: ["proxy-serve/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      site_dir: proxy-serve
+      test_command: |
+        docker run --rm -v "$PWD/Caddyfile:/etc/caddy/Caddyfile:ro" \
+          caddy:2-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+    secrets:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.PROXY_SERVE_SSH_USER }}
+      SSH_PRIVATE_KEY: ${{ secrets.PROXY_SERVE_SSH_PRIVATE_KEY }}
