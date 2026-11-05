@@ -1,0 +1,407 @@
+/* Design direction v2: "case file" — a dark, considered canvas with one
+   recurring structural signature: a brass ledger index on sequential
+   content (Work/Blog rows), echoing casework/lab-notebook numbering
+   from both security and research work. One bold color, spent deliberately
+   on headline rules, index numbers, and the primary action — not scattered.
+   v1 (light/minimal) is kept on branch design-v1-minimal-paper as a
+   recoverable fallback. */
+
+:root {
+    --canvas: #17151a;
+    --paper: #f3f0e6;
+    --brass: #d9a653;
+    --muted: #8c8578;
+    --line: #322d2a;
+
+    --font-display: "Newsreader", Georgia, serif;
+    --font-body: "IBM Plex Sans", -apple-system, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+    --measure: 42rem;
+    --gutter: clamp(1.25rem, 4vw, 3rem);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--paper);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.65;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--brass);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    margin: 0 0 0.4em;
+}
+
+h1 {
+    font-size: clamp(2.75rem, 7vw, 5.25rem);
+    max-width: 16ch;
+}
+
+p {
+    margin: 0 0 1.25em;
+    max-width: var(--measure);
+}
+
+/* Header */
+
+header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.75rem var(--gutter);
+}
+
+.wordmark {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 500;
+}
+
+header nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+header nav a {
+    color: var(--muted);
+    transition: color 0.15s ease;
+}
+
+header nav a:hover {
+    color: var(--brass);
+}
+
+/* Main content */
+
+main {
+    padding: clamp(2rem, 5vw, 3.5rem) var(--gutter) 5rem;
+}
+
+.page {
+    max-width: 72rem;
+}
+
+.page h1 {
+    border-bottom: 3px solid var(--brass);
+    padding-bottom: 0.35em;
+    display: inline-block;
+}
+
+/* The boundary — two different woven-texture slices (from the site
+   owner's own shirt/tie, top and bottom of the same photo) bookending
+   the page in place of a flat rule. Using two distinct strips, not one
+   repeated, gives the sense of a single larger image running behind the
+   whole page — only glimpsed at its very top and bottom edges, with
+   everything in between covered by the page content. Deliberately
+   abstract: it reads as texture, not as imagery. */
+
+.boundary {
+    height: 0.85rem;
+    background-size: cover;
+    background-position: center;
+}
+
+.boundary--top {
+    background-image: url("/static/img/boundary-texture-top.png");
+}
+
+.boundary--bottom {
+    background-image: url("/static/img/boundary-texture-bottom.png");
+}
+
+.back-link {
+    display: block;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    margin-bottom: 2rem;
+}
+
+.back-link::before {
+    content: "← ";
+}
+
+.back-link:hover {
+    color: var(--brass);
+}
+
+.lede {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.2rem;
+    color: var(--muted);
+    margin-top: 1rem;
+}
+
+.project-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 2rem;
+    margin-top: 1.5rem;
+}
+
+/* Row lists (Work, Blog) — the ledger */
+
+.row-list {
+    list-style: none;
+    max-width: 56rem;
+    margin: 2.5rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+}
+
+.row-list li {
+    border-bottom: 1px solid var(--line);
+}
+
+.row-link {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    align-items: baseline;
+    gap: 0.25rem 1.5rem;
+    padding: 1.5rem 0;
+    color: var(--paper);
+}
+
+.row-index {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--brass);
+}
+
+.row-link:hover .row-title {
+    color: var(--brass);
+}
+
+.row-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+}
+
+.row-detail {
+    grid-column: 2 / -1;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+/* Forms (Contact) */
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    max-width: var(--measure);
+    margin-top: 2rem;
+}
+
+form label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+form input,
+form textarea {
+    font: inherit;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--paper);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem 0;
+}
+
+form input:focus,
+form textarea:focus {
+    border-bottom-color: var(--brass);
+}
+
+form textarea {
+    min-height: 8rem;
+    resize: vertical;
+}
+
+form button {
+    align-self: flex-start;
+    font: inherit;
+    font-weight: 500;
+    color: var(--canvas);
+    background: var(--brass);
+    border: none;
+    padding: 0.75rem 1.75rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+form button:hover {
+    opacity: 0.85;
+}
+
+/* Admin */
+
+.admin-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+
+.admin-nav form {
+    margin: 0;
+}
+
+.admin-nav form button {
+    font: inherit;
+    color: var(--muted);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.admin-nav form button:hover {
+    color: var(--brass);
+}
+
+.admin-action {
+    display: block;
+    margin: 1.5rem 0;
+}
+
+.admin-action a {
+    display: inline-block;
+    font-weight: 500;
+    color: var(--canvas);
+    background: var(--brass);
+    padding: 0.6rem 1.4rem;
+}
+
+.admin-action a:hover {
+    color: var(--canvas);
+    opacity: 0.85;
+}
+
+.admin-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.admin-list {
+    list-style: none;
+    max-width: 56rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+}
+
+.admin-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.admin-row .row-title {
+    flex: 1;
+}
+
+.admin-row form {
+    margin: 0;
+    flex-direction: row;
+}
+
+.admin-row form button {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+}
+
+.error {
+    color: var(--brass);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+}
+
+/* Footer */
+
+footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.5rem var(--gutter);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+footer p {
+    margin: 0;
+}
+
+footer nav {
+    display: flex;
+    gap: 1.25rem;
+}
+
+footer nav a:hover {
+    color: var(--brass);
+}
+
+@media (max-width: 30rem) {
+    .row-link {
+        grid-template-columns: 2.5rem 1fr;
+    }
+
+    .row-detail {
+        grid-column: 1 / -1;
+        padding-left: 2.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
+}

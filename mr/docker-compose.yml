@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    container_name: mr-kelsey-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - app-data:/app/data
+    networks:
+      - shared-web
+    expose:
+      - "8080"
+
+networks:
+  shared-web:
+    external: true
+
+volumes:
+  app-data:
