@@ -9,10 +9,10 @@ product categories, a DB-driven home page workbench sample, synthetic
 seed data, and a real favicon. Still open: real formula/product/category
 content from the stakeholder (synthetic data only so far) — see
 `.claude/NEXT_STEPS.md` for the current, agreed-but-not-yet-built list
-and read it before starting any new implementation work here. This repo
-is one of several `*.kelseys.site` subdomains under one project root —
-see the parent `kelseys.site/.claude/CLAUDE.md` for the overall layout
-and shared-infra conventions.
+and read it before starting any new implementation work here. This
+directory is one of several `*.kelseys.site` subdomains in the
+`kelseys-site` monorepo — see the repo-root `.claude/CLAUDE.md` for the
+overall layout and shared-infra conventions.
 
 - Visual identity: moss/berry/ochre on bone paper, Fraunces + Source
   Serif 4 + Space Mono, chosen from a round of mockups reviewed with the
@@ -40,20 +40,24 @@ and shared-infra conventions.
   it can't drift from the source numbers.
 - Naming, confirmed: `pyproject.toml` name `mrs-kelsey`; Docker
   `container_name` `mrs-kelsey-app`; droplet deploy user `deploy-mrs`;
-  `/opt` path `/opt/mrs-kelsey`; GitHub repo
-  `github.com/mr-kelsey/mrs-kelsey-personal-webpage` (same account as
-  `mr.`'s `mr-kelsey/personal-webpage`, disambiguated by the
-  `mrs-kelsey-` prefix).
-- Deployment: **live**, fully wired. GitHub Actions (`deploy.yml`) runs
-  the test suite on every push to `main` and then SSHes into the
-  droplet as `deploy-mrs`; Caddy (`proxy-serve/Caddyfile`) has the
-  `mrs.kelseys.site` block reverse-proxying to `mrs-kelsey-app:8080`;
+  `/opt` path `/opt/mrs-kelsey`. As of the 2026-11 monorepo restructure
+  (see repo-root `.claude/CLAUDE.md`), this no longer has its own GitHub
+  repo — it's the `mrs/` directory of `github.com/mr-kelsey/kelseys-site`,
+  deployed by `.github/workflows/deploy-mrs.yml` (path-filtered on
+  `mrs/**`), with credentials in the `MRS_SSH_USER`/`MRS_SSH_PRIVATE_KEY`
+  repo secrets. The old standalone `mrs-kelsey-personal-webpage` repo is
+  kept around (not deleted) as a rollback path until the monorepo
+  cutover is verified end-to-end, then gets archived.
+- Deployment: **live**, fully wired. `deploy-mrs.yml` runs the test
+  suite on every push to `main` that touches `mrs/**` and then SSHes
+  into the droplet as `deploy-mrs`; Caddy (`proxy-serve/Caddyfile`) has
+  the `mrs.kelseys.site` block reverse-proxying to `mrs-kelsey-app:8080`;
   DNS resolves and `https://mrs.kelseys.site/` serves 200 (verified
   2026-11-01). The deploy job's own `script:` is just
-  `echo "deploying"`, same stub `mr.` uses — that's fine, not a gap:
+  `echo "deploying"`, same stub every site uses — that's fine, not a gap:
   `deploy-mrs`'s SSH key is forced-command-restricted on the droplet to
   always run the real `/opt/mrs-kelsey/deploy.sh` regardless of what
-  command the Action sends, per the parent repo's cross-site SSH
+  command the Action sends, per the repo-root CLAUDE.md's cross-site SSH
   convention. Don't "fix" the stub text thinking it's broken.
   **Caveat:** pushing to `main` is what ships a release — confirm with
   whoever's driving before pushing a commit, same as any other deploy.
