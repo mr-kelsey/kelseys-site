@@ -43,6 +43,14 @@ to everything).
 
 ## Cross-site conventions
 
+- Each Python site manages its own `.venv` independently (`cd mr && uv sync`, etc.) — there
+  is no shared venv at the repo root, and there shouldn't be: the repo root has no
+  `pyproject.toml` of its own, and sites' dependencies genuinely diverge (`mrs` needs
+  `resend`, others don't; this only gets more true as more sites are added). A root-level
+  `.venv` also can't hold two sites' dependencies installed at once, which defeats a chunk of
+  the point of working across sites in one session. Every site's `.gitignore`-driven tooling
+  (CI's `working-directory: ${{ inputs.site_dir }}` + `.venv/bin/pytest`, Docker's own
+  `uv sync` inside each build context) assumes this.
 - Each site gets its own `deploy-{name}` SSH user on the droplet, forced-command-restricted
   to only that site's `/opt/{name}/deploy.sh` — a leaked key for one site can't touch
   another's. Unchanged by the monorepo move: `/opt/{name}` is now a sparse-checkout clone of
