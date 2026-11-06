@@ -10,7 +10,9 @@ Personal resume/portfolio site for Johnathan Kelsey (BS Cybersecurity, MS Applie
 - Content management (create/edit/delete Work & Blog entries) lives at `/admin` — single shared-password auth, deliberate simplification for a single-owner site (no multi-user, no MFA). No SSH needed for routine content edits.
 - Visual style: minimal, whitespace-heavy, typography-led, dark "case file" theme — see the header comment in `static/css/site.css` for the design rationale. The `single-site-fasthtml-base` branch (an earlier pre-split state) came along into the monorepo as `mr/single-site-fasthtml-base`. The `design-v1-minimal-paper` branch (the earlier light/minimal fallback direction) was deliberately **not** migrated — it only exists in the old, archived `personal-webpage` repo now.
 - The (gitignored, local-only) `README.md` has dev setup, deploy mechanics, and operational notes the user didn't want public.
-- Monorepo-era deploy (`deploy-mr.yml`) deployed successfully 2026-11-06, as part of a push that also touched `mrs`/`proxy-serve` — path-filter isolation specifically (does a push touching *only* `mr/**` avoid firing the other sites' workflows) is still pending its own isolated test.
+- Monorepo-era deploy fully verified 2026-11-06: `deploy-mr.yml` deploys successfully, a
+  repo-root-only push fires no deploy workflow at all, and a push touching only `mr/**`
+  fires only `deploy-mr.yml` — not `deploy-mrs.yml`/`deploy-proxy-serve.yml`/`deploy-root.yml`.
 
 ## Content still to add (not yet written — confirm details with the user, don't invent)
 
