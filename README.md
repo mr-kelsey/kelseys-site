@@ -41,3 +41,8 @@ Each subdomain has its own path-filtered GitHub Actions workflow
 site's directory, and calls the shared `.github/workflows/deploy-reusable.yml` to run tests
 and SSH-trigger the droplet's deploy script. See `.claude/CLAUDE.md` for the secrets-naming
 convention and how to wire up a new subdomain.
+
+Status as of 2026-11-06: `mr`, `mrs`, and `proxy-serve` have deployed successfully from this
+repo. `root` has no `ROOT_SSH_USER`/`ROOT_SSH_PRIVATE_KEY` secrets or droplet-side
+`/opt/kelseys-root` yet, so `deploy-root.yml` correctly fires on a push touching `root/**`
+but fails at the SSH step until that's provisioned.
