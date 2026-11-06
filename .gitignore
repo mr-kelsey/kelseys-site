@@ -1,2 +1,17 @@
 .DS_Store
 .claude/resources
+
+# Common to every Python site (mr/, mrs/, root/, and any future one). A
+# pattern with no slash at all matches at any depth, so these alone cover
+# e.g. mr/.venv, mrs/.venv, root/.venv without repeating per site. data/*.db*
+# needs the explicit **/ prefix instead -- a pattern that DOES contain a
+# slash (other than trailing) is anchored to the directory holding this
+# file, so a bare "data/*.db*" here would only match <repo-root>/data/*.db*,
+# not mr/data/*.db* etc.
+.venv/
+__pycache__/
+*.pyc
+.env
+**/data/*.db*
+.sesskey
+*.egg-info/

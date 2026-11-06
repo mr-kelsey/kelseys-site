@@ -1,9 +1,2 @@
-.venv/
-__pycache__/
-*.pyc
-.env
-data/*.db*
-.sesskey
-*.egg-info/
 README.md
 /cli-version
