@@ -32,15 +32,16 @@ CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty' 2>/dev/null) || CWD=""
 # verbatim so operator characters inside them aren't treated as separators.
 split_unquoted() {
   awk '
-    BEGIN { q = "" }
+    BEGIN { q = ""; cont = 0 }
     {
       n = length($0)
-      # A record (original input line) that already started inside an open quote
-      # is pure continuation of a multi-line quoted argument (e.g. a git commit
-      # -m message spanning several lines) -- not a new shell command, so its
+      # A record (original input line) that already started inside an open quote,
+      # or is itself the continuation of a trailing unquoted, unescaped backslash
+      # line-continuation on the previous line, is not a new shell command -- its
       # first word must never be checked below. Mark it with a leading SOH
       # sentinel the consumer strips and skips on sight, without analysis.
-      out = (q != "") ? "\001" : ""
+      out = (q != "" || cont) ? "\001" : ""
+      cont = 0
       for (i = 1; i <= n; i++) {
         c = substr($0, i, 1)
         if (q == "\"" && c == "\\" && i < n) {
@@ -59,6 +60,15 @@ split_unquoted() {
         } else {
           out = out c
         }
+      }
+      # An odd run of trailing backslashes while unquoted is a real line
+      # continuation (each preceding backslash escapes the next, so an even
+      # run cancels out to literal backslashes with nothing left to escape
+      # the newline).
+      if (q == "") {
+        trailing = 0
+        for (j = n; j >= 1 && substr($0, j, 1) == "\\"; j--) trailing++
+        if (trailing % 2 == 1) cont = 1
       }
       print out
     }
