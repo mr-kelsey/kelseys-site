@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    image: mr-kelsey-app:latest
     container_name: mr-kelsey-app
     restart: unless-stopped
     env_file:
