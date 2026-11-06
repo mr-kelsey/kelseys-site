@@ -35,7 +35,12 @@ split_unquoted() {
     BEGIN { q = "" }
     {
       n = length($0)
-      out = ""
+      # A record (original input line) that already started inside an open quote
+      # is pure continuation of a multi-line quoted argument (e.g. a git commit
+      # -m message spanning several lines) -- not a new shell command, so its
+      # first word must never be checked below. Mark it with a leading SOH
+      # sentinel the consumer strips and skips on sight, without analysis.
+      out = (q != "") ? "\001" : ""
       for (i = 1; i <= n; i++) {
         c = substr($0, i, 1)
         if (q == "\"" && c == "\\" && i < n) {
@@ -109,6 +114,9 @@ is_real_venv_python() {
 
 blocked=0
 while IFS= read -r seg; do
+  if [[ "$seg" == $'\001'* ]]; then
+    continue
+  fi
   seg="$(printf '%s' "$seg" | sed -e 's/^[[:space:]]*//')"
   [ -z "$seg" ] && continue
 
