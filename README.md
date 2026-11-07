@@ -42,7 +42,8 @@ site's directory, and calls the shared `.github/workflows/deploy-reusable.yml` t
 and SSH-trigger the droplet's deploy script. See `.claude/CLAUDE.md` for the secrets-naming
 convention and how to wire up a new subdomain.
 
-Status as of 2026-11-06: `mr`, `mrs`, and `proxy-serve` have deployed successfully from this
-repo. `root` has no `ROOT_SSH_USER`/`ROOT_SSH_PRIVATE_KEY` secrets or droplet-side
-`/opt/kelseys-root` yet, so `deploy-root.yml` correctly fires on a push touching `root/**`
-but fails at the SSH step until that's provisioned.
+Status as of 2026-11-07: every subdomain in the repo map above — `mr`, `mrs`, `root`, and
+`proxy-serve` — has deployed successfully. Droplet-side provisioning (the `deploy-{name}` SSH
+user, its forced-command key, and the `/opt/{name}` sparse-checkout clone) for any future
+subdomain is scripted in `.claude/resources/provision-subdomain.sh` (local-only, gitignored)
+rather than done by hand.
