@@ -1,15 +1,51 @@
 from datetime import datetime, timezone
 from logging import getLogger
+from pathlib import Path
 
 from fasthtml import common as Fast
+from starlette.responses import FileResponse
 
 from app.auth import admin_layout, require_admin
+from app.config import SiteConfig
 from app.db import site_db
 from app.layout import site_layout
 from app.models import Project
 
 router = Fast.APIRouter()
 logger = getLogger(__name__)
+
+REPORT_PDF_CONTENT_TYPE = "application/pdf"
+
+
+def _report_pdf_file_path(slug: str) -> Path:
+    return Path(SiteConfig().reports_dir) / f"{slug}.pdf"
+
+
+def _report_pdf_url(slug: str) -> str:
+    return f"/reports/{slug}.pdf"
+
+
+def _has_pdf_upload(upload: Fast.UploadFile | None) -> bool:
+    return bool(upload and upload.filename)
+
+
+def _looks_like_pdf(upload: Fast.UploadFile) -> bool:
+    return upload.content_type == REPORT_PDF_CONTENT_TYPE or upload.filename.lower().endswith(
+        ".pdf"
+    )
+
+
+def _save_report_pdf(slug: str, upload: Fast.UploadFile) -> str:
+    """Persists an uploaded report PDF under the slug's own filename --
+    never the browser-supplied filename -- so there's no path-traversal
+    surface from user-controlled input. Stored under SiteConfig.reports_dir,
+    which lives in the app-data Docker volume (same as the SQLite DB), not
+    under static/ -- static/ is baked into the image at build time and
+    wouldn't survive the next deploy."""
+    destination = _report_pdf_file_path(slug)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(upload.file.read())
+    return _report_pdf_url(slug)
 
 
 def _project_row(index: int, project) -> Fast.Li:
@@ -50,12 +86,15 @@ def _project_form(project: Project | None = None, *, action: str, show_slug_fiel
         ),
         Fast.Label("Body", Fast.Textarea(project.body, name="body", required=True)),
         Fast.Label("URL", Fast.Input(name="url", value=project.url)),
+        Fast.P(f"Current report PDF: {project.report_pdf}") if project.report_pdf else None,
         Fast.Label(
-            "Report PDF path", Fast.Input(name="report_pdf", value=project.report_pdf)
+            "Report PDF (leave blank to keep current)" if project.report_pdf else "Report PDF",
+            Fast.Input(name="report_pdf_upload", type="file", accept="application/pdf"),
         ),
         Fast.Button("Save", type="submit"),
         method="post",
         action=action,
+        enctype="multipart/form-data",
     )
 
 
@@ -104,10 +143,15 @@ def post(
     description: str,
     body: str,
     url: str = "",
-    report_pdf: str = "",
+    report_pdf_upload: Fast.UploadFile | None = None,
 ):
     if (redirect := require_admin(session)) is not None:
         return redirect
+    report_pdf = ""
+    if _has_pdf_upload(report_pdf_upload):
+        if not _looks_like_pdf(report_pdf_upload):
+            raise Fast.HTTPException(status_code=400, detail="Report PDF upload must be a PDF file.")
+        report_pdf = _save_report_pdf(slug, report_pdf_upload)
     site_db.projects.insert(
         Project(
             slug=slug,
@@ -147,13 +191,18 @@ def post(
     description: str,
     body: str,
     url: str = "",
-    report_pdf: str = "",
+    report_pdf_upload: Fast.UploadFile | None = None,
 ):
     if (redirect := require_admin(session)) is not None:
         return redirect
     found = site_db.projects(where="slug=?", where_args=[slug])
     if not found:
         raise Fast.HTTPException(status_code=404)
+    report_pdf = found[0].report_pdf
+    if _has_pdf_upload(report_pdf_upload):
+        if not _looks_like_pdf(report_pdf_upload):
+            raise Fast.HTTPException(status_code=400, detail="Report PDF upload must be a PDF file.")
+        report_pdf = _save_report_pdf(slug, report_pdf_upload)
     site_db.projects.update(
         {
             "id": found[0].id,
@@ -199,3 +248,11 @@ def get(slug: str):
             cls="project-links",
         ),
     )
+
+
+@router("/reports/{slug}.pdf")
+def get(slug: str):
+    path = _report_pdf_file_path(slug)
+    if not path.is_file():
+        raise Fast.HTTPException(status_code=404)
+    return FileResponse(str(path), filename=f"{slug}.pdf", media_type=REPORT_PDF_CONTENT_TYPE)

@@ -13,6 +13,11 @@ Personal resume/portfolio site for Johnathan Kelsey (BS Cybersecurity, MS Applie
 - Monorepo-era deploy fully verified 2026-11-06: `deploy-mr.yml` deploys successfully, a
   repo-root-only push fires no deploy workflow at all, and a push touching only `mr/**`
   fires only `deploy-mr.yml` — not `deploy-mrs.yml`/`deploy-proxy-serve.yml`/`deploy-root.yml`.
+- A Work project's report PDF is uploaded through `/admin/work`'s form (`app/routes/work.py`),
+  not a path typed in by hand — it's stored under `SiteConfig.reports_dir` (default
+  `data/reports/`, inside the `app-data` Docker volume) and served from a dedicated
+  `/reports/{slug}.pdf` route, deliberately **not** `static/`: `static/` is baked into the
+  image at build time, so anything written there at runtime would vanish on the next deploy.
 
 ## Content still to add (not yet written — confirm details with the user, don't invent)
 

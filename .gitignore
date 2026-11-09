@@ -13,5 +13,9 @@ __pycache__/
 *.pyc
 .env
 **/data/*.db*
+# mr's admin-uploaded report PDFs (app/routes/work.py, SiteConfig.reports_dir)
+# land under data/reports/ in local dev the same way they land in the
+# app-data Docker volume in production: real uploaded content, not source.
+**/data/reports/
 .sesskey
 *.egg-info/

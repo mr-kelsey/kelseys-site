@@ -1,8 +1,9 @@
 from importlib import import_module
 from os import close as close_fd
 from pathlib import Path
+from shutil import rmtree
 from sys import modules
-from tempfile import mkstemp
+from tempfile import mkdtemp, mkstemp
 from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
@@ -33,7 +34,9 @@ def client(monkeypatch: MonkeyPatch) -> Iterator[TestClient]:
     file_descriptor, db_path = mkstemp(suffix=".db") # leaves fd in open state
     close_fd(file_descriptor) # closes fd to make sure it's not orphaned
     db_path = Path(db_path)
+    reports_dir = Path(mkdtemp(suffix="_reports"))
     monkeypatch.setenv("DB_PATH", str(db_path))
+    monkeypatch.setenv("REPORTS_DIR", str(reports_dir))
     monkeypatch.setenv("ADMIN_PASSWORD", ADMIN_PASSWORD_FOR_TESTS)
 
     _drop_app_modules()
@@ -45,6 +48,7 @@ def client(monkeypatch: MonkeyPatch) -> Iterator[TestClient]:
     finally:
         _drop_app_modules()
         db_path.unlink()
+        rmtree(reports_dir, ignore_errors=True)
 
 
 @fixture()
