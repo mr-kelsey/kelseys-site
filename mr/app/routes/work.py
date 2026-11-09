@@ -10,6 +10,7 @@ from app.config import SiteConfig
 from app.db import site_db
 from app.layout import site_layout
 from app.models import Project
+from app.text import normalize_line_endings
 
 router = Fast.APIRouter()
 logger = getLogger(__name__)
@@ -157,7 +158,7 @@ def post(
             slug=slug,
             title=title,
             description=description,
-            body=body,
+            body=normalize_line_endings(body),
             url=url,
             report_pdf=report_pdf,
             created_at=datetime.now(timezone.utc).isoformat(),
@@ -208,7 +209,7 @@ def post(
             "id": found[0].id,
             "title": title,
             "description": description,
-            "body": body,
+            "body": normalize_line_endings(body),
             "url": url,
             "report_pdf": report_pdf,
         }

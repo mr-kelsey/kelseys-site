@@ -261,3 +261,22 @@ def test_post_admin_work_edit_without_new_upload_keeps_existing_report_pdf(
 def test_get_reports_pdf_returns_404_for_unknown_slug(admin_client: TestClient) -> None:
     response = admin_client.get("/reports/does-not-exist.pdf")
     assert response.status_code == 404
+
+
+def test_post_admin_work_new_normalizes_crlf_line_endings_in_body(
+    admin_client: TestClient, db: Database
+) -> None:
+    form = {**VALID_PROJECT_FORM, "body": "Paragraph one.\r\n\r\nParagraph two."}
+    admin_client.post("/admin/work/new", data=form)
+    [project] = db.projects(where="slug=?", where_args=["new-project"])
+    assert project.body == "Paragraph one.\n\nParagraph two."
+
+
+def test_post_admin_work_edit_normalizes_crlf_line_endings_in_body(
+    admin_client: TestClient, db: Database
+) -> None:
+    _insert_project(db)
+    form = {**VALID_PROJECT_FORM, "body": "Paragraph one.\r\n\r\nParagraph two."}
+    admin_client.post("/admin/work/new-project/edit", data=form)
+    [project] = db.projects(where="slug=?", where_args=["new-project"])
+    assert project.body == "Paragraph one.\n\nParagraph two."

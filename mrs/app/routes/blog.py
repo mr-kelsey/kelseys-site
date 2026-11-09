@@ -7,6 +7,7 @@ from app.auth import admin_layout, require_admin
 from app.db import site_db
 from app.layout import site_layout
 from app.models import Post
+from app.text import normalize_line_endings
 
 router = Fast.APIRouter()
 logger = getLogger(__name__)
@@ -98,7 +99,7 @@ def post(session, slug: str, title: str, body: str):
         Post(
             slug=slug,
             title=title,
-            body=body,
+            body=normalize_line_endings(body),
             created_at=datetime.now(timezone.utc).isoformat(),
         )
     )
@@ -127,7 +128,7 @@ def post(slug: str, session, title: str, body: str):
     found = site_db.posts(where="slug=?", where_args=[slug])
     if not found:
         raise Fast.HTTPException(status_code=404)
-    site_db.posts.update({"id": found[0].id, "title": title, "body": body})
+    site_db.posts.update({"id": found[0].id, "title": title, "body": normalize_line_endings(body)})
     logger.info("Updated post %r", slug)
     return Fast.Redirect("/admin/blog")
 

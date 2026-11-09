@@ -147,3 +147,22 @@ def test_deleting_post_is_logged(
     caplog.set_level(logging.WARNING)
     admin_client.post("/admin/blog/new-post/delete")
     assert "new-post" in caplog.text
+
+
+def test_post_admin_blog_new_normalizes_crlf_line_endings_in_body(
+    admin_client: TestClient, db: Database
+) -> None:
+    form = {**VALID_POST_FORM, "body": "Paragraph one.\r\n\r\nParagraph two."}
+    admin_client.post("/admin/blog/new", data=form)
+    [post] = db.posts(where="slug=?", where_args=["new-post"])
+    assert post.body == "Paragraph one.\n\nParagraph two."
+
+
+def test_post_admin_blog_edit_normalizes_crlf_line_endings_in_body(
+    admin_client: TestClient, db: Database
+) -> None:
+    _insert_post(db)
+    form = {**VALID_POST_FORM, "body": "Paragraph one.\r\n\r\nParagraph two."}
+    admin_client.post("/admin/blog/new-post/edit", data=form)
+    [post] = db.posts(where="slug=?", where_args=["new-post"])
+    assert post.body == "Paragraph one.\n\nParagraph two."
