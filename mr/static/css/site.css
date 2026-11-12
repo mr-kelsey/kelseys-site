@@ -362,6 +362,130 @@ form button:hover {
     font-size: 0.85rem;
 }
 
+/* Resume */
+
+.resume-section {
+    max-width: 56rem;
+    margin: 2.5rem 0 0;
+}
+
+.resume-section:first-of-type {
+    margin-top: 1.5rem;
+}
+
+.resume-section h2 {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+}
+
+.resume-row {
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.resume-section > .resume-row:first-of-type {
+    border-top: 1px solid var(--line);
+}
+
+.resume-row--compact {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.35rem 1.5rem;
+    padding: 0.65rem 0;
+}
+
+.resume-row-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.35rem 1.5rem;
+}
+
+.resume-row-title {
+    font-weight: 500;
+    color: var(--paper);
+}
+
+.resume-row-subtitle {
+    color: var(--muted);
+}
+
+.resume-dates {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.resume-location {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0.25rem 0 0;
+}
+
+.resume-bullets {
+    margin: 0.6rem 0 0;
+    padding-left: 1.2em;
+}
+
+.resume-bullets li {
+    margin-bottom: 0.35rem;
+}
+
+.resume-detail {
+    font-size: 0.92rem;
+    color: var(--muted);
+    margin: 0.5rem 0 0;
+}
+
+.resume-lapsed {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--brass);
+    font-style: italic;
+    margin-left: 0.6rem;
+}
+
+.resume-skill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.resume-skill-group:first-of-type {
+    border-top: 1px solid var(--line);
+}
+
+.resume-skill-label {
+    font-weight: 500;
+    min-width: 12rem;
+    color: var(--paper);
+}
+
+.resume-skill-list {
+    color: var(--muted);
+}
+
+@media (max-width: 30rem) {
+    .resume-skill-group {
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .resume-skill-label {
+        min-width: 0;
+    }
+}
+
 /* Footer */
 
 footer {
@@ -403,5 +527,106 @@ footer nav a:hover {
 @media (prefers-reduced-motion: reduce) {
     * {
         transition: none !important;
+    }
+}
+
+/* Print — any page, not just the resume: a browser Print/Save-as-PDF
+   should produce a clean mailable document, not the dark on-screen
+   theme, so this forces a white canvas and drops the site chrome. */
+
+/* Explicit page margin so printed pagination is deterministic — Chrome's
+   own "Default" print margin isn't documented/stable across OS and printer
+   drivers, so this is declared rather than relied on. Honored whenever the
+   browser's print dialog margin setting is left on "Default". */
+@page {
+    size: letter;
+    margin: 0.5in;
+}
+
+@media print {
+    :root {
+        --paper: #111;
+        --muted: #444;
+        --measure: 100%;
+    }
+
+    body {
+        background: #fff;
+        color: #111;
+        font-size: 14px;
+        line-height: 1.55;
+    }
+
+    header,
+    footer,
+    .boundary {
+        display: none;
+    }
+
+    main {
+        padding: 16px 0 0;
+    }
+
+    .page {
+        max-width: none;
+    }
+
+    .page h1 {
+        font-size: 34px;
+        border-bottom-width: 2px;
+        padding-bottom: 0.15em;
+        margin-bottom: 0.35em;
+    }
+
+    .lede {
+        font-size: 14px;
+        margin: 0.25em 0 0.7em;
+    }
+
+    h2 {
+        margin-bottom: 0.5em;
+    }
+
+    p {
+        margin-bottom: 0.7em;
+    }
+
+    .resume-section {
+        margin-top: 0.9em;
+    }
+
+    .resume-section:first-of-type {
+        margin-top: 0.4em;
+    }
+
+    .resume-row {
+        padding: 0.5em 0;
+        break-inside: avoid;
+    }
+
+    .resume-row--compact {
+        padding: 0.3em 0;
+    }
+
+    .resume-row-head {
+        gap: 0.15em 1em;
+    }
+
+    .resume-bullets {
+        margin-top: 0.3em;
+    }
+
+    .resume-bullets li {
+        margin-bottom: 0.2em;
+    }
+
+    .resume-location,
+    .resume-detail {
+        margin-top: 0.15em;
+    }
+
+    .resume-skill-group {
+        padding: 0.25em 0;
+        break-inside: avoid;
     }
 }

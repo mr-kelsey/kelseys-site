@@ -29,9 +29,10 @@ app.routes.remove(static_catch_all)
 app.static_route_exts(exts="site_static")
 
 # The route above is appended to the end of app.routes, same as the one it
-# replaced — needed so our explicit /resume.pdf route (registered earlier,
-# in the routes_module loop) matches first (Starlette matches in
-# registration order).
+# replaced — needed so any explicit route registered earlier in the
+# routes_module loop that happens to match a site_static extension (as
+# /resume.pdf once did) still wins (Starlette matches in registration
+# order).
 
 if __name__ == "__main__":
     import uvicorn

@@ -27,7 +27,7 @@ BIO_PARAGRAPHS: tuple[str, ...] = (
     "plenty of hands-on data experience putting projects together for my master's "
     "degree. Right now, I split my time between AI security "
     "work and sustainability engineering — designing waste-diversion plans that "
-    "have kept 72% of material out of landfills across 581 events.",
+    "have kept 88.75% of material out of landfills across 581 events.",
     "The common thread, if there is one: I go where the failure mode is expensive "
     "and figure out how to catch it earlier. 'Security' is just that instinct with "
     "a job title.",
