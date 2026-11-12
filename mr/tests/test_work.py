@@ -66,3 +66,32 @@ def test_project_detail_omits_report_download_link_when_unset(client: TestClient
     db.projects.insert(Project(slug="hospital-cv", title="Hospital CV", description="d", url=""))
     response = client.get("/work/hospital-cv")
     assert "Download Report" not in response.text
+
+
+def test_project_detail_has_og_title_with_project_title(client: TestClient, db: Database) -> None:
+    db.projects.insert(Project(slug="hospital-cv", title="Hospital CV", description="d", url=""))
+    response = client.get("/work/hospital-cv")
+    assert '<meta property="og:title" content="Hospital CV — mr-kelsey">' in response.text
+
+
+def test_project_detail_uses_project_description_as_og_description(
+    client: TestClient, db: Database
+) -> None:
+    db.projects.insert(
+        Project(
+            slug="hospital-cv",
+            title="Hospital CV",
+            description="Reduces hospital waste via CV",
+            url="",
+        )
+    )
+    response = client.get("/work/hospital-cv")
+    assert (
+        '<meta property="og:description" content="Reduces hospital waste via CV">'
+        in response.text
+    )
+
+
+def test_work_index_has_its_own_og_description(client: TestClient) -> None:
+    response = client.get("/work")
+    assert "projects Johnathan Kelsey has built" in response.text

@@ -21,6 +21,16 @@ Personal resume/portfolio site for Johnathan Kelsey (BS Cybersecurity, MS Applie
 
 ## Content still to add (not yet written — confirm details with the user, don't invent)
 
-- Only one school AI project (composer classification) is live so far; more exist.
+- Two school AI projects live so far (composer classification, GNN event-driven foot-traffic
+  near Oracle Park); more exist.
+
+## Known issues
+
+- `og:title`/`og:description` are wired up site-wide (`Layout.__call__`'s `description`
+  param, defaulting to `DEFAULT_DESCRIPTION`; Work index/detail pages pass their own). No
+  `og:image` yet — `Project` has no image field, and the only existing image asset
+  (`favicon.png`) is 128×128, too low-res for a share card. Needs a real ≥600×315 (ideally
+  1200×630) image before it's worth adding; link previews still render without a thumbnail
+  until then.
 
 This file, plus the user's own global `~/.claude/` rules (TDD, no wildcard imports, OOP where it fits, no `global` keyword, descriptive names), govern how work on this repo should proceed.

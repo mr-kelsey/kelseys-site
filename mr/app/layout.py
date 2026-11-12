@@ -4,6 +4,11 @@ from fasthtml import common as Fast
 
 STYLESHEET_PATH = Path("static/css/site.css")
 
+DEFAULT_DESCRIPTION = (
+    "Cybersecurity analyst and applied AI/ML engineer — MS Applied AI, BS "
+    "Cybersecurity, CompTIA CySA+. Resume, project work, and writing."
+)
+
 NAV_LINKS: tuple[tuple[str, str], ...] = (
     ("Home", "/"),
     ("About", "/about"),
@@ -58,9 +63,12 @@ class Layout:
         version = int(STYLESHEET_PATH.stat().st_mtime)
         return f"/static/css/site.css?v={version}"
 
-    def __call__(self, page_title: str, *content) -> tuple:
+    def __call__(self, page_title: str, *content, description: str | None = None) -> tuple:
+        full_title = f"{page_title} — {self.site_title}"
         return (
-            Fast.Title(f"{page_title} — {self.site_title}"),
+            Fast.Title(full_title),
+            Fast.Meta(property="og:title", content=full_title),
+            Fast.Meta(property="og:description", content=description or DEFAULT_DESCRIPTION),
             Fast.Link(rel="icon", href="/static/img/favicon.png", type="image/png"),
             *FONT_LINKS,
             Fast.Link(rel="stylesheet", href=self._stylesheet_href()),

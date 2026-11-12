@@ -16,6 +16,9 @@ router = Fast.APIRouter()
 logger = getLogger(__name__)
 
 REPORT_PDF_CONTENT_TYPE = "application/pdf"
+WORK_INDEX_DESCRIPTION = (
+    "A look at the security, AI/ML, and engineering projects Johnathan Kelsey has built."
+)
 
 
 def _report_pdf_file_path(slug: str) -> Path:
@@ -109,6 +112,7 @@ def get():
             *(_project_row(i, project) for i, project in enumerate(projects, start=1)),
             cls="row-list",
         ),
+        description=WORK_INDEX_DESCRIPTION,
     )
 
 
@@ -248,6 +252,7 @@ def get(slug: str):
             else None,
             cls="project-links",
         ),
+        description=project.description,
     )
 
 
